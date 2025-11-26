@@ -8,6 +8,7 @@
 
 #include "ZFAd/ZFAdDef.h"
 #include "ZFAd/ZFAdForBanner.h"
+#include "ZFAd/ZFAdForSplash.h"
 
 #endif // #ifndef _ZFI_ZFAd_h_
 

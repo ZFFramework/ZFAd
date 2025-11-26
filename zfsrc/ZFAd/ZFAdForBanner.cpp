@@ -3,26 +3,51 @@
 
 ZF_NAMESPACE_GLOBAL_BEGIN
 
-zfclassNotPOD _ZFP_ZFAdForBannerPrivate {
-public:
-    void *nativeAd;
-};
-
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForBanner)
 
+ZFEVENT_REGISTER(ZFAdForBanner, AdOnError)
+ZFEVENT_REGISTER(ZFAdForBanner, AdOnDisplay)
+ZFEVENT_REGISTER(ZFAdForBanner, AdOnClick)
+
+ZFEVENT_REGISTER(ZFAdForBanner, AdOnClose)
+
+ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, appId) {
+    ZFPROTOCOL_ACCESS(ZFAdForBanner)->appIdUpdate(this);
+}
+ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, adId) {
+    ZFPROTOCOL_ACCESS(ZFAdForBanner)->adIdUpdate(this);
+}
+
 ZFMETHOD_DEFINE_0(ZFAdForBanner, void *, nativeAd) {
-    return d->nativeAd;
+    return this->nativeImplView();
 }
 
 void ZFAdForBanner::objectOnInit(void) {
     zfsuper::objectOnInit();
-    d = zfpoolNew(_ZFP_ZFAdForBannerPrivate);
-    d->nativeAd = ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdViewCreate(this);
+
+    ZFCoreAssert(this->nativeImplView() == zfnull);
+    zfclassNotPOD NativeImplViewDestroy {
+    public:
+        static void action(ZF_IN zfanyT<ZFUIView> const &view) {
+            ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdDestroy(view);
+        }
+    };
+    this->nativeImplView(
+        ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdCreate(this)
+        , NativeImplViewDestroy::action
+        );
 }
 void ZFAdForBanner::objectOnDealloc(void) {
-    ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdViewDestroy(this, d->nativeAd);
     zfsuper::objectOnDealloc();
+}
+
+void ZFAdForBanner::layoutOnMeasure(
+        ZF_OUT ZFUISize &ret
+        , ZF_IN const ZFUISize &sizeHint
+        , ZF_IN const ZFUISizeParam &sizeParam
+        ) {
+    ret = ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdMeasure(this, sizeHint);
 }
 
 ZF_NAMESPACE_GLOBAL_END
