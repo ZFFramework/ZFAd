@@ -44,7 +44,8 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when #start
+     * called when #start,
+     * param0 is the #ZFUIRootWindow
      */
     ZFEVENT(AdOnStart)
     /**
@@ -64,7 +65,7 @@ public:
      * for the result type:
      * -  success : ad has displayed and reached timeout
      * -  fail : error occurred, #E_AdOnError would also be fired before this event
-     * -  cancel : user has clicked skip button
+     * -  cancel : user has clicked skip button, or #stop called
      */
     ZFEVENT(AdOnStop)
 
@@ -87,8 +88,9 @@ public:
      * onStop's param0 is a #ZFResultType indicates result type,
      * param1 is a #v_zfstring optionally holds the error hint
      */
-    ZFMETHOD_DECLARE_1(void, start
+    ZFMETHOD_DECLARE_2(void, start
             , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
+            , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
             )
     /** @brief stop the ad */
     ZFMETHOD_DECLARE_0(void, stop)

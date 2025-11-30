@@ -6,12 +6,22 @@ ZF_NAMESPACE_GLOBAL_BEGIN
 zfclassNotPOD _ZFP_ZFAdForSplashPrivate {
 public:
     void *nativeAd;
+    zfauto eventHolder;
     zfbool started;
 public:
     _ZFP_ZFAdForSplashPrivate(void)
     : nativeAd(zfnull)
+    , eventHolder()
     , started(zffalse)
     {
+    }
+public:
+    void stop(void) {
+        this->started = zffalse;
+        if(this->eventHolder) {
+            ZFObserverGroupRemove(this->eventHolder);
+            this->eventHolder = zfnull;
+        }
     }
 };
 
@@ -27,30 +37,64 @@ ZFEVENT_REGISTER(ZFAdForSplash, AdOnTimer)
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnStop)
 
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, appId) {
-    ZFPROTOCOL_ACCESS(ZFAdForSplash)->appIdUpdate(this);
+    if(this->appId() && this->adId()) {
+        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
+    }
 }
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, adId) {
-    ZFPROTOCOL_ACCESS(ZFAdForSplash)->adIdUpdate(this);
+    if(this->appId() && this->adId()) {
+        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
+    }
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForSplash, void *, nativeAd) {
     return d->nativeAd;
 }
 
-ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
+ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
+        , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
     if(!d->started) {
+        if(!this->appId() || !this->adId()) {
+            this->observerNotify(zfself::E_AdOnError(), zfobj<v_zfstring>("appId and adId must be set before start"));
+            return;
+        }
+
         d->started = zftrue;
         zfRetain(this);
-        ZFPROTOCOL_ACCESS(ZFAdForSplash)->start(this);
-        this->observerNotify(zfself::E_AdOnStart());
+        if(window == zfnull) {
+            window = ZFUIRootWindow::mainWindow();
+        }
+        this->observerNotify(zfself::E_AdOnStart(), window);
+
+        if(window->nativeWindowIsCreated()) {
+            ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStart(this, window);
+        }
+        else {
+            d->eventHolder = zfobj<ZFObject>();
+            zfself *owner = this;
+
+            ZFLISTENER_1(windowOnCreate
+                    , zfweakT<zfself>, owner
+                    ) {
+                if(owner->d->eventHolder) {
+                    ZFObserverGroupRemove(owner->d->eventHolder);
+                    owner->d->eventHolder = zfnull;
+                }
+                ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStart(owner, zfargs.sender());
+            } ZFLISTENER_END()
+
+            ZFObserverGroup(d->eventHolder, window)
+                .observerAdd(ZFUIRootWindow::E_WindowOnCreate(), windowOnCreate, ZFLevelZFFrameworkPostNormal)
+                ;
+        }
     }
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplash, void, stop) {
     if(d->started) {
-        d->started = zffalse;
-        ZFPROTOCOL_ACCESS(ZFAdForSplash)->stop(this);
+        d->stop();
+        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStop(this);
         this->observerNotify(zfself::E_AdOnStop(), zfobj<v_ZFResultType>(v_ZFResultType::e_Cancel));
         zfRelease(this);
     }
@@ -75,7 +119,7 @@ void ZFAdForSplash::_ZFP_ZFAdForSplash_stop(
         , ZF_IN const zfstring &errorHint
         ) {
     if(d->started) {
-        d->started = zffalse;
+        d->stop();
         if(resultType == v_ZFResultType::e_Fail) {
             this->observerNotify(zfself::E_AdOnError(), zfobj<v_zfstring>(errorHint));
         }

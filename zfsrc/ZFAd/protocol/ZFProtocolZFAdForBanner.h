@@ -26,10 +26,8 @@ public:
             , ZF_IN const ZFUISize &sizeHint
             ) zfpurevirtual;
 
-    /** @brief update app id */
-    virtual void appIdUpdate(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
-    /** @brief update app key */
-    virtual void adIdUpdate(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
+    /** @brief update app id and key */
+    virtual void nativeAdUpdate(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
 
     // ============================================================
     // callbacks that implementations must notify

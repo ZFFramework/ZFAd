@@ -13,10 +13,14 @@ ZFEVENT_REGISTER(ZFAdForBanner, AdOnClick)
 ZFEVENT_REGISTER(ZFAdForBanner, AdOnClose)
 
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, appId) {
-    ZFPROTOCOL_ACCESS(ZFAdForBanner)->appIdUpdate(this);
+    if(this->appId() && this->adId()) {
+        ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
+    }
 }
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, adId) {
-    ZFPROTOCOL_ACCESS(ZFAdForBanner)->adIdUpdate(this);
+    if(this->appId() && this->adId()) {
+        ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
+    }
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForBanner, void *, nativeAd) {
@@ -47,7 +51,7 @@ void ZFAdForBanner::layoutOnMeasure(
         , ZF_IN const ZFUISize &sizeHint
         , ZF_IN const ZFUISizeParam &sizeParam
         ) {
-    ret = ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdMeasure(this, sizeHint);
+    ret = ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdMeasure(this, ZFUISizeApplyScale(sizeHint, this->UIScaleFixed()));
 }
 
 ZF_NAMESPACE_GLOBAL_END

@@ -20,15 +20,16 @@ public:
     /** @brief destroy native ad */
     virtual void nativeAdDestroy(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
 
-    /** @brief update app id */
-    virtual void appIdUpdate(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
-    /** @brief update app key */
-    virtual void adIdUpdate(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
+    /** @brief update app id and key */
+    virtual void nativeAdUpdate(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
 
     /** @brief start native ad */
-    virtual void start(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
+    virtual void nativeAdStart(
+            ZF_IN ZFAdForSplash *ad
+            , ZF_IN ZFUIRootWindow *window
+            ) zfpurevirtual;
     /** @brief stop native ad */
-    virtual void stop(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
+    virtual void nativeAdStop(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
 
     // ============================================================
     // callbacks that implementations must notify
@@ -61,7 +62,7 @@ public:
             ZF_IN ZFAdForSplash *ad
             , ZF_IN ZFResultType resultType
             ) {
-        ZFCoreAssert(resultType == v_ZFResultType::e_Success || resultType == v_ZFResultType::e_Fail);
+        ZFCoreAssert(resultType == v_ZFResultType::e_Success || resultType == v_ZFResultType::e_Cancel);
         ad->_ZFP_ZFAdForSplash_stop(resultType, zfnull);
     }
 ZFPROTOCOL_INTERFACE_END(ZFAdForSplash)
