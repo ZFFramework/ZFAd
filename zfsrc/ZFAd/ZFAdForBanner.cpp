@@ -13,14 +13,10 @@ ZFEVENT_REGISTER(ZFAdForBanner, AdOnClick)
 ZFEVENT_REGISTER(ZFAdForBanner, AdOnClose)
 
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, appId) {
-    if(this->appId() && this->adId()) {
-        ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
-    }
+    ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
 }
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForBanner, zfstring, adId) {
-    if(this->appId() && this->adId()) {
-        ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
-    }
+    ZFPROTOCOL_ACCESS(ZFAdForBanner)->nativeAdUpdate(this);
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForBanner, void *, nativeAd) {

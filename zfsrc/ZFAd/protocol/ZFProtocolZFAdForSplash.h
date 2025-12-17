@@ -50,13 +50,6 @@ public:
         ad->observerNotify(ZFAdForSplash::E_AdOnClick());
     }
 
-    /** @brief see #ZFAdForSplash::E_AdOnTimer */
-    zffinal void notifyAdOnTimer(
-            ZF_IN ZFAdForSplash *ad
-            , ZF_IN zftimet remainingTime
-            ) {
-        ad->observerNotify(ZFAdForSplash::E_AdOnTimer(), zfobj<v_zftimet>(remainingTime));
-    }
     /** @brief see #ZFAdForSplash::E_AdOnStop */
     zffinal void notifyAdOnStop(
             ZF_IN ZFAdForSplash *ad

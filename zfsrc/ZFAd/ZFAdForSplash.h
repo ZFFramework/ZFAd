@@ -52,13 +52,6 @@ public:
      * @brief see #ZFObject::observerNotify
      *
      * called when #stop or timeout or error,
-     * param0 is a #v_zftimet indicates remaining time
-     */
-    ZFEVENT(AdOnTimer)
-    /**
-     * @brief see #ZFObject::observerNotify
-     *
-     * called when #stop or timeout or error,
      * param0 is a #ZFResultType indicates result type,
      * param1 is a #v_zfstring optionally holds the error hint
      * \n

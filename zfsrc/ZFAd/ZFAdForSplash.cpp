@@ -33,18 +33,13 @@ ZFEVENT_REGISTER(ZFAdForSplash, AdOnDisplay)
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnClick)
 
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnStart)
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnTimer)
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnStop)
 
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, appId) {
-    if(this->appId() && this->adId()) {
-        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
-    }
+    ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
 }
 ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, adId) {
-    if(this->appId() && this->adId()) {
-        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
-    }
+    ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForSplash, void *, nativeAd) {
