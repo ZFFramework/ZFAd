@@ -14,9 +14,8 @@ zfclassFwd _ZFP_ZFAdForSplashPrivate;
 /**
  * @brief splash ad
  */
-zfclass ZFLIB_ZFAd ZFAdForSplash : zfextend ZFObject, zfimplement ZFTaskId {
+zfclass ZFLIB_ZFAd ZFAdForSplash : zfextend ZFObject {
     ZFOBJECT_DECLARE(ZFAdForSplash, ZFObject)
-    ZFIMPLEMENT_DECLARE(ZFTaskId)
 
 public:
     // ============================================================
@@ -51,14 +50,14 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when #stop or timeout or error,
+     * called when timeout or error or skip clicked,
      * param0 is a #ZFResultType indicates result type,
      * param1 is a #v_zfstring optionally holds the error hint
      * \n
      * for the result type:
-     * -  success : ad has displayed and reached timeout
+     * -  success : ad has displayed and reached timeout (or skip clicked on some impl)
      * -  fail : error occurred, #E_AdOnError would also be fired before this event
-     * -  cancel : user has clicked skip button, or #stop called
+     * -  cancel : user has clicked skip button (may not work for some impl)
      */
     ZFEVENT(AdOnStop)
 
@@ -85,8 +84,6 @@ public:
             , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
             , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
             )
-    /** @brief stop the ad */
-    ZFMETHOD_DECLARE_0(void, stop)
     /** @brief whether the ad started */
     ZFMETHOD_DECLARE_0(zfbool, started)
 

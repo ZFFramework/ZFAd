@@ -86,14 +86,6 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         }
     }
 }
-ZFMETHOD_DEFINE_0(ZFAdForSplash, void, stop) {
-    if(d->started) {
-        d->stop();
-        ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStop(this);
-        this->observerNotify(zfself::E_AdOnStop(), zfobj<v_ZFResultType>(v_ZFResultType::e_Cancel));
-        zfRelease(this);
-    }
-}
 ZFMETHOD_DEFINE_0(ZFAdForSplash, zfbool, started) {
     return d->started;
 }

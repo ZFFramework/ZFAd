@@ -28,8 +28,6 @@ public:
             ZF_IN ZFAdForSplash *ad
             , ZF_IN ZFUIRootWindow *window
             ) zfpurevirtual;
-    /** @brief stop native ad */
-    virtual void nativeAdStop(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
 
     // ============================================================
     // callbacks that implementations must notify
