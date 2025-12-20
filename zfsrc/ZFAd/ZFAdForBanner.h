@@ -47,16 +47,25 @@ public:
     ZFEVENT(AdOnClose)
 
 public:
-    /** @brief app id */
-    ZFPROPERTY_ASSIGN(zfstring, appId)
-    ZFPROPERTY_ON_UPDATE_DECLARE(zfstring, appId)
-    /** @brief app key */
-    ZFPROPERTY_ASSIGN(zfstring, adId)
-    ZFPROPERTY_ON_UPDATE_DECLARE(zfstring, adId)
+    /**
+     * @brief setup the native ad info
+     */
+    ZFMETHOD_DECLARE_3(void, setup
+            , ZFMP_IN(const zfstring &, implName)
+            , ZFMP_IN(const zfstring &, appId)
+            , ZFMP_IN(const zfstring &, adId)
+            )
 
 public:
-    /** @brief access the native ad */
+    /** @brief access the native ad, valid only after #setup */
     ZFMETHOD_DECLARE_0(void *, nativeAd)
+
+    /** @brief init with params, see #setup */
+    ZFOBJECT_ON_INIT_DECLARE_3(
+            ZFMP_IN(const zfstring &, implName)
+            , ZFMP_IN(const zfstring &, appId)
+            , ZFMP_IN(const zfstring &, adId)
+            )
 
 protected:
     zfoverride
@@ -70,6 +79,10 @@ protected:
             , ZF_IN const ZFUISize &sizeHint
             , ZF_IN const ZFUISizeParam &sizeParam
             );
+private:
+    zfauto d;
+public:
+    void *_ZFP_ZFAdForBanner_impl(void);
 };
 
 ZF_NAMESPACE_GLOBAL_END

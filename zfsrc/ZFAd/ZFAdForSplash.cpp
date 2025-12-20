@@ -5,12 +5,14 @@ ZF_NAMESPACE_GLOBAL_BEGIN
 
 zfclassNotPOD _ZFP_ZFAdForSplashPrivate {
 public:
+    zfautoT<ZFAdForSplashImpl> impl;
     void *nativeAd;
     zfauto eventHolder;
     zfbool started;
 public:
     _ZFP_ZFAdForSplashPrivate(void)
-    : nativeAd(zfnull)
+    : impl()
+    , nativeAd(zfnull)
     , eventHolder()
     , started(zffalse)
     {
@@ -35,11 +37,36 @@ ZFEVENT_REGISTER(ZFAdForSplash, AdOnClick)
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnStart)
 ZFEVENT_REGISTER(ZFAdForSplash, AdOnStop)
 
-ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, appId) {
-    ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
-}
-ZFPROPERTY_ON_UPDATE_DEFINE(ZFAdForSplash, zfstring, adId) {
-    ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdUpdate(this);
+ZFMETHOD_DEFINE_3(ZFAdForSplash, void, setup
+        , ZFMP_IN(const zfstring &, implName)
+        , ZFMP_IN(const zfstring &, appId)
+        , ZFMP_IN(const zfstring &, adId)
+        ) {
+    if(d->nativeAd) {
+        d->impl->nativeAdDestroy(this);
+        d->nativeAd = zfnull;
+        d->impl = zfnull;
+    }
+
+    const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForSplashImpl_%s", implName));
+    if(cls == zfnull) {
+        ZFCoreLogTrim("[ZFAdForSplash] no impl: %s", implName);
+        return;
+    }
+    zfautoT<ZFAdForSplashImpl> impl = cls->newInstance();
+    if(zfcast(ZFAdForSplashImpl *, impl) == zfnull) {
+        ZFCoreLogTrim("[ZFAdForSplash] invalid impl: %s", cls);
+        return;
+    }
+
+    void *nativeAd = impl->nativeAdCreate(this, appId, adId);
+    if(nativeAd == zfnull) {
+        ZFCoreLogTrim("[ZFAdForSplash] unable to setup(%s, %s, %s)", implName, appId, adId);
+        return;
+    }
+
+    d->impl = impl;
+    d->nativeAd = nativeAd;
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForSplash, void *, nativeAd) {
@@ -51,8 +78,8 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
     if(!d->started) {
-        if(!this->appId() || !this->adId()) {
-            this->observerNotify(zfself::E_AdOnError(), zfobj<v_zfstring>("appId and adId must be set before start"));
+        if(d->nativeAd == zfnull) {
+            this->observerNotify(zfself::E_AdOnError(), zfobj<v_zfstring>("ad has not been setup"));
             return;
         }
 
@@ -64,7 +91,7 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         this->observerNotify(zfself::E_AdOnStart(), window);
 
         if(window->nativeWindowIsCreated()) {
-            ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStart(this, window);
+            d->impl->nativeAdStart(this, window);
         }
         else {
             d->eventHolder = zfobj<ZFObject>();
@@ -77,7 +104,7 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
                     ZFObserverGroupRemove(owner->d->eventHolder);
                     owner->d->eventHolder = zfnull;
                 }
-                ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdStart(owner, zfargs.sender());
+                owner->d->impl->nativeAdStart(owner, zfargs.sender());
             } ZFLISTENER_END()
 
             ZFObserverGroup(d->eventHolder, window)
@@ -90,17 +117,34 @@ ZFMETHOD_DEFINE_0(ZFAdForSplash, zfbool, started) {
     return d->started;
 }
 
+ZFOBJECT_ON_INIT_DEFINE_3(ZFAdForSplash
+        , ZFMP_IN(const zfstring &, implName)
+        , ZFMP_IN(const zfstring &, appId)
+        , ZFMP_IN(const zfstring &, adId)
+        ) {
+    this->setup(implName, appId, adId);
+}
+
 void ZFAdForSplash::objectOnInit(void) {
     zfsuper::objectOnInit();
     d = zfpoolNew(_ZFP_ZFAdForSplashPrivate);
-    d->nativeAd = ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdCreate(this);
 }
 void ZFAdForSplash::objectOnDealloc(void) {
-    ZFPROTOCOL_ACCESS(ZFAdForSplash)->nativeAdDestroy(this);
     zfpoolDelete(d);
     zfsuper::objectOnDealloc();
 }
+void ZFAdForSplash::objectOnDeallocPrepare(void) {
+    if(d->nativeAd) {
+        d->impl->nativeAdDestroy(this);
+        d->nativeAd = zfnull;
+        d->impl = zfnull;
+    }
+    zfsuper::objectOnDeallocPrepare();
+}
 
+void *ZFAdForSplash::_ZFP_ZFAdForSplash_impl(void) {
+    return (void *)d->impl.to<ZFAdForSplashImpl *>();
+}
 void ZFAdForSplash::_ZFP_ZFAdForSplash_stop(
         ZF_IN ZFResultType resultType
         , ZF_IN const zfstring &errorHint

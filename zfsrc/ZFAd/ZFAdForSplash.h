@@ -62,12 +62,14 @@ public:
     ZFEVENT(AdOnStop)
 
 public:
-    /** @brief app id */
-    ZFPROPERTY_ASSIGN(zfstring, appId)
-    ZFPROPERTY_ON_UPDATE_DECLARE(zfstring, appId)
-    /** @brief app key */
-    ZFPROPERTY_ASSIGN(zfstring, adId)
-    ZFPROPERTY_ON_UPDATE_DECLARE(zfstring, adId)
+    /**
+     * @brief setup the native ad info
+     */
+    ZFMETHOD_DECLARE_3(void, setup
+            , ZFMP_IN(const zfstring &, implName)
+            , ZFMP_IN(const zfstring &, appId)
+            , ZFMP_IN(const zfstring &, adId)
+            )
 
 public:
     /** @brief access the native ad */
@@ -87,15 +89,25 @@ public:
     /** @brief whether the ad started */
     ZFMETHOD_DECLARE_0(zfbool, started)
 
+    /** @brief init with params, see #setup */
+    ZFOBJECT_ON_INIT_DECLARE_3(
+            ZFMP_IN(const zfstring &, implName)
+            , ZFMP_IN(const zfstring &, appId)
+            , ZFMP_IN(const zfstring &, adId)
+            )
+
 protected:
     zfoverride
     virtual void objectOnInit(void);
     zfoverride
     virtual void objectOnDealloc(void);
+    zfoverride
+    virtual void objectOnDeallocPrepare(void);
 
 private:
     _ZFP_ZFAdForSplashPrivate *d;
 public:
+    void *_ZFP_ZFAdForSplash_impl(void);
     void _ZFP_ZFAdForSplash_stop(
             ZF_IN ZFResultType resultType
             , ZF_IN const zfstring &errorHint

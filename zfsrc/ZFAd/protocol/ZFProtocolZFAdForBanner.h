@@ -12,11 +12,20 @@ ZF_NAMESPACE_GLOBAL_BEGIN
 
 /**
  * @brief protocol for ZFAdForBanner
+ *
+ * impl must register by declaring a class named `ZFAdForBannerImpl_xxx`,
+ * while `xxx` is the name passed from #ZFAdForBanner::setup
  */
-ZFPROTOCOL_INTERFACE_BEGIN(ZFLIB_ZFAd, ZFAdForBanner)
+zfinterface ZFLIB_ZFAd ZFAdForBannerImpl : zfextend ZFInterface {
+    ZFINTERFACE_DECLARE(ZFAdForBannerImpl, ZFInterface)
+
 public:
     /** @brief create native ad */
-    virtual void *nativeAdCreate(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
+    virtual void *nativeAdCreate(
+            ZF_IN ZFAdForBanner *ad
+            , ZF_IN const zfstring &appId
+            , ZF_IN const zfstring &adId
+            ) zfpurevirtual;
     /** @brief destroy native ad */
     virtual void nativeAdDestroy(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
 
@@ -26,8 +35,11 @@ public:
             , ZF_IN const ZFUISize &sizeHint
             ) zfpurevirtual;
 
-    /** @brief update app id and key */
-    virtual void nativeAdUpdate(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
+public:
+    /** @brief util for impl to access impl from owner ad */
+    static ZFAdForBannerImpl *implForAd(ZF_IN ZFAdForBanner *ad) {
+        return (ZFAdForBannerImpl *)ad->_ZFP_ZFAdForBanner_impl();
+    }
 
     // ============================================================
     // callbacks that implementations must notify
@@ -52,7 +64,7 @@ public:
     zffinal void notifyAdOnClose(ZF_IN ZFAdForBanner *ad) {
         ad->observerNotify(ZFAdForBanner::E_AdOnClose());
     }
-ZFPROTOCOL_INTERFACE_END(ZFAdForBanner)
+};
 
 ZF_NAMESPACE_GLOBAL_END
 #endif // #ifndef _ZFI_ZFProtocolZFAdForBanner_h_
