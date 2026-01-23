@@ -57,7 +57,7 @@ public:
      * for the result type:
      * -  success : ad has displayed and reached timeout (or skip clicked on some impl)
      * -  fail : error occurred, #E_AdOnError would also be fired before this event
-     * -  cancel : user has clicked skip button (may not work for some impl)
+     * -  cancel : user has clicked skip button (may not work for some impl), or timeout
      */
     ZFEVENT(AdOnStop)
 
