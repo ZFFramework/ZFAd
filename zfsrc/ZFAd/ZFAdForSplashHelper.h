@@ -62,13 +62,10 @@ public:
             , ZFMP_IN(ZFUIRootWindow *, v)
             )
 
-    /** @brief window level for #bg */
-    ZFPROPERTY_ASSIGN(zfint, windowLevel, 1500)
-
     /**
      * @brief timeout if no impl can display success
      */
-    ZFPROPERTY_ASSIGN(zftimet, timeout, 3000)
+    ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
     /**
      * @brief bg content displaying during ad loading,
      *   null would result to a plain white color view
@@ -82,9 +79,8 @@ public:
      * onStop's param0 is a #ZFResultType indicates result type,
      * param1 is a #v_zfstring optionally holds the error hint
      */
-    ZFMETHOD_DECLARE_2(void, start
+    ZFMETHOD_DECLARE_1(void, start
             , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
-            , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
             )
     /** @brief whether the ad started */
     ZFMETHOD_DECLARE_0(zfbool, started)
@@ -99,8 +95,6 @@ protected:
     virtual void objectOnInit(void);
     zfoverride
     virtual void objectOnDealloc(void);
-    zfoverride
-    virtual void objectOnDeallocPrepare(void);
 
 private:
     _ZFP_ZFAdForSplashHelperPrivate *d;

@@ -50,18 +50,18 @@ ZFMETHOD_DEFINE_3(ZFAdForSplash, void, setup
 
     const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForSplashImpl_%s", implName));
     if(cls == zfnull) {
-        ZFCoreLogTrim("[ZFAdForSplash] no impl: %s", implName);
+        ZFLogTrim("[ZFAdForSplash] no impl: %s", implName);
         return;
     }
     zfautoT<ZFAdForSplashImpl> impl = cls->newInstance();
     if(zfcast(ZFAdForSplashImpl *, impl) == zfnull) {
-        ZFCoreLogTrim("[ZFAdForSplash] invalid impl: %s", cls);
+        ZFLogTrim("[ZFAdForSplash] invalid impl: %s", cls);
         return;
     }
 
     void *nativeAd = impl->nativeAdCreate(this, appId, adId);
     if(nativeAd == zfnull) {
-        ZFCoreLogTrim("[ZFAdForSplash] unable to setup(%s, %s, %s)", implName, appId, adId);
+        ZFLogTrim("[ZFAdForSplash] unable to setup(%s, %s, %s)", implName, appId, adId);
         return;
     }
 

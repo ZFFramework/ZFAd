@@ -16,14 +16,18 @@ public:
 public:
     ZFCoreArray<Cfg> cfgList;
     zfautoT<ZFAdForBanner> impl; // current impl, may be null
-    zfindex index; // next index to try, may exceed cfgList
+    zfindex nextIndex; // next index to try, may exceed cfgList
     zfobj<ZFObject> observerOwner;
+    zftimet closeTime;
+    zfautoT<ZFTaskId> closeTimeoutTaskId;
 public:
     _ZFP_ZFAdForBannerHelperPrivate(void)
     : cfgList()
     , impl()
-    , index(0)
+    , nextIndex(0)
     , observerOwner()
+    , closeTime(zftimetInvalid())
+    , closeTimeoutTaskId()
     {
     }
 public:
@@ -33,6 +37,109 @@ public:
             this->impl->removeFromParent();
             this->impl = zfnull;
         }
+    }
+    void implUpdate(ZF_IN ZFAdForBannerHelper *owner) {
+        if(this->impl || this->nextIndex >= this->cfgList.count()) {
+            return;
+        }
+        if(this->closeTime != zftimetInvalid()) {
+            if(this->closeTimeoutTaskId == zfnull) {
+                ZFLISTENER_1(closeTimeout
+                        , zfweakT<ZFAdForBannerHelper>, owner
+                        ) {
+                    owner->d->closeTime = zftimetInvalid();
+                    owner->d->closeTimeoutTaskId = zfnull;
+                    owner->d->implUpdate(owner);
+                } ZFLISTENER_END()
+                zftimet timeout = this->closeTime + owner->closeDuration() - ZFTime::currentTime();
+                if(timeout < 0) {
+                    timeout = 0;
+                }
+                this->closeTimeoutTaskId = ZFTimerOnce(owner->closeDuration(), closeTimeout);
+            }
+            return;
+        }
+        _ZFP_ZFAdForBannerHelperPrivate::Cfg const &cfg = this->cfgList[(this->nextIndex)++];
+        zfbool valid = zffalse;
+        do {
+            if(cfg.systemName) {
+                zfstring systemName = ZFEnvInfo::systemName();
+                if(systemName && systemName != cfg.systemName) {
+                    break;
+                }
+            }
+
+            if(cfg.localeName) {
+                zfstring localeName = ZFEnvInfo::localeInfo();
+                if(localeName && localeName != cfg.localeName) {
+                    break;
+                }
+            }
+
+            if(cfg.localeLangName) {
+                zfstring localeLangName = ZFEnvInfo::localeLangInfo();
+                if(localeLangName && localeLangName != cfg.localeLangName) {
+                    break;
+                }
+            }
+
+            valid = zftrue;
+        } while(zffalse);
+        if(!valid) {
+            this->implUpdate(owner);
+            return;
+        }
+
+        zfobj<ZFAdForBanner> impl;
+        this->impl = impl;
+        owner->child(impl)->sizeFill();
+
+        zfweakT<ZFAdForBannerHelper> weakOwner = owner;
+
+        ZFLISTENER_1(AdOnError
+                , zfweakT<ZFAdForBannerHelper>, weakOwner
+                ) {
+            if(!weakOwner) {return;}
+            weakOwner->d->implStop();
+            weakOwner->d->implUpdate(weakOwner);
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnDisplay
+                , zfweakT<ZFAdForBannerHelper>, weakOwner
+                ) {
+            if(!weakOwner) {return;}
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnClick
+                , zfweakT<ZFAdForBannerHelper>, weakOwner
+                ) {
+            if(!weakOwner) {return;}
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnClose
+                , zfweakT<ZFAdForBannerHelper>, weakOwner
+                ) {
+            if(!weakOwner) {return;}
+            weakOwner->d->nextIndex = 0;
+            weakOwner->d->closeTime = ZFTime::currentTime();
+            weakOwner->d->implStop();
+            weakOwner->layoutRequest();
+            if(weakOwner->viewTreeInWindow()) {
+                weakOwner->d->implUpdate(weakOwner);
+            }
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClose(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFObserverGroup(this->observerOwner, impl)
+            .observerAdd(ZFAdForBanner::E_AdOnError(), AdOnError)
+            .observerAdd(ZFAdForBanner::E_AdOnDisplay(), AdOnDisplay)
+            .observerAdd(ZFAdForBanner::E_AdOnClick(), AdOnClick)
+            .observerAdd(ZFAdForBanner::E_AdOnClose(), AdOnClose)
+            ;
+
+        impl->setup(cfg.implName, cfg.appId, cfg.adId);
     }
 };
 
@@ -63,89 +170,9 @@ ZFMETHOD_DEFINE_6(ZFAdForBannerHelper, ZFAdForBannerHelper *, cfg
     cfg.localeLangName = localeLangName;
     d->cfgList.add(cfg);
 
-    zfclassNotPOD _Impl {
-    public:
-        static void tryNext(ZF_IN ZFAdForBannerHelper *owner) {
-            if(owner->d->impl || owner->d->index >= owner->d->cfgList.count()) {
-                return;
-            }
-            _ZFP_ZFAdForBannerHelperPrivate::Cfg const &cfg = owner->d->cfgList[(owner->d->index)++];
-            zfbool valid = zffalse;
-            do {
-                if(cfg.systemName) {
-                    zfstring systemName = ZFEnvInfo::systemName();
-                    if(systemName && systemName != cfg.systemName) {
-                        break;
-                    }
-                }
-
-                if(cfg.localeName) {
-                    zfstring localeName = ZFEnvInfo::localeInfo();
-                    if(localeName && localeName != cfg.localeName) {
-                        break;
-                    }
-                }
-
-                if(cfg.localeLangName) {
-                    zfstring localeLangName = ZFEnvInfo::localeLangInfo();
-                    if(localeLangName && localeLangName != cfg.localeLangName) {
-                        break;
-                    }
-                }
-
-                valid = zftrue;
-            } while(zffalse);
-            if(!valid) {
-                tryNext(owner);
-                return;
-            }
-
-            zfobj<ZFAdForBanner> impl;
-            owner->d->impl = impl;
-            owner->child(impl)->sizeFill();
-
-            zfweakT<ZFAdForBannerHelper> weakOwner;
-
-            ZFLISTENER_1(AdOnError
-                    , zfweakT<ZFAdForBannerHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->d->implStop();
-                tryNext(weakOwner);
-            } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnDisplay
-                    , zfweakT<ZFAdForBannerHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->observerNotify(ZFAdForBanner::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnClick
-                    , zfweakT<ZFAdForBannerHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->observerNotify(ZFAdForBanner::E_AdOnClick(), zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnClose
-                    , zfweakT<ZFAdForBannerHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->observerNotify(ZFAdForBanner::E_AdOnClose(), zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFObserverGroup(owner->d->observerOwner, impl)
-                .observerAdd(ZFAdForBanner::E_AdOnError(), AdOnError)
-                .observerAdd(ZFAdForBanner::E_AdOnDisplay(), AdOnDisplay)
-                .observerAdd(ZFAdForBanner::E_AdOnClick(), AdOnClick)
-                .observerAdd(ZFAdForBanner::E_AdOnClose(), AdOnClose)
-                ;
-
-            impl->setup(cfg.implName, cfg.appId, cfg.adId);
-        }
-    };
-    _Impl::tryNext(this);
+    if(this->viewTreeInWindow()) {
+        d->implUpdate(this);
+    }
     return this;
 }
 
@@ -158,7 +185,12 @@ void ZFAdForBannerHelper::objectOnDealloc(void) {
     zfsuper::objectOnDealloc();
 }
 void ZFAdForBannerHelper::objectOnDeallocPrepare(void) {
-    d->index = 0;
+    d->nextIndex = 0;
+    if(d->closeTimeoutTaskId) {
+        d->closeTimeoutTaskId->stop();
+        d->closeTimeoutTaskId = zfnull;
+    }
+    d->closeTime = zftimetInvalid();
     d->implStop();
     zfsuper::objectOnDeallocPrepare();
 }
@@ -173,6 +205,15 @@ void ZFAdForBannerHelper::layoutOnMeasure(
     }
     else {
         ret = ZFUISizeZero();
+    }
+}
+
+void ZFAdForBannerHelper::viewTreeInWindowOnUpdate(void) {
+    zfsuper::viewTreeInWindowOnUpdate();
+    if(this->viewTreeInWindow()) {
+        if(d->impl == zfnull) {
+            d->implUpdate(this);
+        }
     }
 }
 

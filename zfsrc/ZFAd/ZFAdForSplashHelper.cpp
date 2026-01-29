@@ -21,6 +21,8 @@ public:
 
     zfweakT<ZFUIRootWindow> window;
     zftimet startTime; // 0 when not started
+    zfautoT<ZFUIWindow> bgWindow;
+    zfauto holder; // retained during running
 public:
     _ZFP_ZFAdForSplashHelperPrivate(void)
     : cfgList()
@@ -29,6 +31,8 @@ public:
     , observerOwner()
     , window()
     , startTime()
+    , bgWindow()
+    , holder()
     {
     }
 public:
@@ -70,7 +74,7 @@ ZFMETHOD_DEFINE_6(ZFAdForSplashHelper, ZFAdForSplashHelper *, cfg
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfanyT<ZFUIRootWindow>, window) {
-    return d->window;
+    return d->window ? d->window.asAny() : ZFUIRootWindow::mainWindow();
 }
 ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, ZFAdForSplashHelper *, window
         , ZFMP_IN(ZFUIRootWindow *, v)
@@ -79,29 +83,39 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, ZFAdForSplashHelper *, window
     return this;
 }
 
-ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, start
+ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
-        , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
     if(this->started()) {
         return;
     }
+    d->holder = this;
+    d->bgWindow = zfobj<ZFUIWindow>(this->window());
+    d->bgWindow->viewId("ZFAdForSplashBg");
+    d->bgWindow->bgColor(ZFUIColorCreateRGB(0xFFFFFF));
+    d->bgWindow->windowLevel(ZFUIWindowLevelOverlay() - 1);
+    d->bgWindow->windowMarginShouldApply(zffalse);
+    if(this->bg()) {
+        this->bg()->removeFromParent();
+        d->bgWindow->child(this->bg())->sizeFill();
+    }
+    d->bgWindow->show();
+
     d->startTime = ZFTime::currentTime();
-    this->observerNotify(ZFAdForSplash::E_AdOnStart(), d->window ? d->window.toObject() : ZFUIRootWindow::mainWindow().toObject());
+    this->observerNotify(ZFAdForSplash::E_AdOnStart(), this->window());
 
     zfclassNotPOD _Impl {
     public:
         static void tryNext(ZF_IN ZFAdForSplashHelper *owner) {
             if(owner->d->impl || owner->d->index >= owner->d->cfgList.count()) {
+                _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("no valid impl"));
                 return;
             }
             if(ZFTime::currentTime() - owner->d->startTime >= owner->timeout()) {
-                owner->d->index = 0;
-                owner->d->startTime = 0;
-                owner->d->implStop();
-                owner->observerNotify(ZFAdForSplash::E_AdOnStop(), zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("load timeout"));
+                _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("load timeout"));
                 return;
             }
+
             _ZFP_ZFAdForSplashHelperPrivate::Cfg const &cfg = owner->d->cfgList[(owner->d->index)++];
             zfbool valid = zffalse;
             do {
@@ -136,7 +150,7 @@ ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, start
             zfobj<ZFAdForSplash> impl;
             owner->d->impl = impl;
 
-            zfweakT<ZFAdForSplashHelper> weakOwner;
+            zfweakT<ZFAdForSplashHelper> weakOwner = owner;
 
             ZFLISTENER_1(AdOnError
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
@@ -150,6 +164,10 @@ ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
+                if(weakOwner->d->bgWindow) {
+                    weakOwner->d->bgWindow->hide();
+                    weakOwner->d->bgWindow = zfnull;
+                }
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 
@@ -160,14 +178,38 @@ ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, start
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnClick(), zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 
+            ZFLISTENER_1(AdOnStop
+                    , zfweakT<ZFAdForSplashHelper>, weakOwner
+                    ) {
+                if(!weakOwner) {return;}
+                _stop(weakOwner, zfargs.param0(), zfargs.param1());
+            } ZFLISTENER_END()
+
             ZFObserverGroup(owner->d->observerOwner, impl)
                 .observerAdd(ZFAdForSplash::E_AdOnError(), AdOnError)
                 .observerAdd(ZFAdForSplash::E_AdOnDisplay(), AdOnDisplay)
                 .observerAdd(ZFAdForSplash::E_AdOnClick(), AdOnClick)
+                .observerAdd(ZFAdForSplash::E_AdOnStop(), AdOnStop)
                 ;
 
             impl->setup(cfg.implName, cfg.appId, cfg.adId);
             impl->start();
+        }
+    private:
+        static void _stop(
+                ZF_IN ZFAdForSplashHelper *owner
+                , ZF_IN v_ZFResultType *resultType
+                , ZF_IN v_zfstring *errorHint
+                ) {
+            owner->d->index = 0;
+            owner->d->startTime = 0;
+            owner->d->implStop();
+            if(owner->d->bgWindow) {
+                owner->d->bgWindow->hide();
+                owner->d->bgWindow = zfnull;
+            }
+            owner->observerNotify(ZFAdForSplash::E_AdOnStop(), resultType, errorHint);
+            owner->d->holder = zfnull;
         }
     };
     _Impl::tryNext(this);
@@ -189,15 +231,6 @@ void ZFAdForSplashHelper::objectOnInit(void) {
 void ZFAdForSplashHelper::objectOnDealloc(void) {
     zfpoolDelete(d);
     zfsuper::objectOnDealloc();
-}
-void ZFAdForSplashHelper::objectOnDeallocPrepare(void) {
-    zfbool needNotify = this->started();
-    d->index = 0;
-    d->startTime = 0;
-    d->implStop();
-    if(needNotify) {
-    }
-    zfsuper::objectOnDeallocPrepare();
 }
 
 ZF_NAMESPACE_GLOBAL_END

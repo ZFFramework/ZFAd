@@ -34,10 +34,19 @@ zfclassFwd _ZFP_ZFAdForBannerHelperPrivate;
  * how it works:
  * -# try each config if env matches, in order
  * -# try next one if some impl failed
+ * -# if unable to display any ad, or closed by user,
+ *   measure to zero size
  * -# simulate all events of #ZFAdForBanner, except #ZFAdForBanner::E_AdOnError
+ * -# when user click close (#ZFAdForBanner::E_AdOnClose), do not show for #closeDuration
  */
 zfclass ZFLIB_ZFAd ZFAdForBannerHelper : zfextend ZFUIView {
     ZFOBJECT_DECLARE(ZFAdForBannerHelper, ZFUIView)
+
+public:
+    /**
+     * @brief when user click close ad, do not show again for this duration
+     */
+    ZFPROPERTY_ASSIGN(zftimet, closeDuration, zftimetOneMinute() * 5)
 
 public:
     /**
@@ -66,8 +75,12 @@ protected:
             , ZF_IN const ZFUISize &sizeHint
             , ZF_IN const ZFUISizeParam &sizeParam
             );
+    zfoverride
+    virtual void viewTreeInWindowOnUpdate(void);
+
 private:
     _ZFP_ZFAdForBannerHelperPrivate *d;
+    friend zfclassFwd _ZFP_ZFAdForBannerHelperPrivate;
 };
 
 ZF_NAMESPACE_GLOBAL_END

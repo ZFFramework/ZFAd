@@ -26,18 +26,18 @@ ZFMETHOD_DEFINE_3(ZFAdForBanner, void, setup
 
     const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForBannerImpl_%s", implName));
     if(cls == zfnull) {
-        ZFCoreLogTrim("[ZFAdForBanner] no impl: %s", implName);
+        ZFLogTrim("[ZFAdForBanner] no impl: %s", implName);
         return;
     }
     zfautoT<ZFAdForBannerImpl> impl = cls->newInstance();
     if(zfcast(ZFAdForBannerImpl *, impl) == zfnull) {
-        ZFCoreLogTrim("[ZFAdForBanner] invalid impl: %s", cls);
+        ZFLogTrim("[ZFAdForBanner] invalid impl: %s", cls);
         return;
     }
 
     void *nativeAd = impl->nativeAdCreate(this, appId, adId);
     if(nativeAd == zfnull) {
-        ZFCoreLogTrim("[ZFAdForBanner] unable to setup(%s, %s, %s)", implName, appId, adId);
+        ZFLogTrim("[ZFAdForBanner] unable to setup(%s, %s, %s)", implName, appId, adId);
         return;
     }
 
