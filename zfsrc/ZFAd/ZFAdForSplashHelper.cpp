@@ -174,10 +174,6 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
-                if(weakOwner->d->bgWindow) {
-                    weakOwner->d->bgWindow->hide();
-                    weakOwner->d->bgWindow = zfnull;
-                }
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 

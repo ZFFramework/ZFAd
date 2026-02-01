@@ -72,6 +72,8 @@ protected:
     virtual void objectOnInit(void);
     zfoverride
     virtual void objectOnDealloc(void);
+    zfoverride
+    virtual void objectOnDeallocPrepare(void);
 
     zfoverride
     virtual void viewTreeInWindowOnUpdate(void);

@@ -80,6 +80,10 @@ void ZFAdForBanner::objectOnDealloc(void) {
     ZFCoreAssert(d == zfnull);
     zfsuper::objectOnDealloc();
 }
+void ZFAdForBanner::objectOnDeallocPrepare(void) {
+    this->nativeImplView(zfnull, zfnull);
+    zfsuper::objectOnDeallocPrepare();
+}
 
 void ZFAdForBanner::viewTreeInWindowOnUpdate(void) {
     zfsuper::viewTreeInWindowOnUpdate();
@@ -100,7 +104,10 @@ void ZFAdForBanner::layoutOnMeasure(
         , ZF_IN const ZFUISizeParam &sizeParam
         ) {
     if(d) {
-        ret = d.to<ZFAdForBannerImpl *>()->nativeAdMeasure(this, ZFUISizeApplyScale(sizeHint, this->UIScaleFixed()));
+        ret = ZFUISizeApplyScaleReversely(
+                d.to<ZFAdForBannerImpl *>()->nativeAdMeasure(this, ZFUISizeApplyScale(sizeHint, this->UIScaleFixed()))
+                , this->UIScaleFixed()
+                );
     }
 }
 
