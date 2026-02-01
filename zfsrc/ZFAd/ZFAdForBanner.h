@@ -74,6 +74,9 @@ protected:
     virtual void objectOnDealloc(void);
 
     zfoverride
+    virtual void viewTreeInWindowOnUpdate(void);
+
+    zfoverride
     virtual void layoutOnMeasure(
             ZF_OUT ZFUISize &ret
             , ZF_IN const ZFUISize &sizeHint

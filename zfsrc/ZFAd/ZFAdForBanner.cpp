@@ -54,6 +54,10 @@ ZFMETHOD_DEFINE_3(ZFAdForBanner, void, setup
         nativeAd
         , NativeImplViewDestroy::action
         );
+
+    if(this->viewTreeInWindow()) {
+        impl->nativeAdAttach(this);
+    }
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForBanner, void *, nativeAd) {
@@ -75,6 +79,19 @@ void ZFAdForBanner::objectOnInit(void) {
 void ZFAdForBanner::objectOnDealloc(void) {
     ZFCoreAssert(d == zfnull);
     zfsuper::objectOnDealloc();
+}
+
+void ZFAdForBanner::viewTreeInWindowOnUpdate(void) {
+    zfsuper::viewTreeInWindowOnUpdate();
+    ZFAdForBannerImpl *impl = d;
+    if(impl) {
+        if(this->viewTreeInWindow()) {
+            impl->nativeAdAttach(this);
+        }
+        else {
+            impl->nativeAdDetach(this);
+        }
+    }
 }
 
 void ZFAdForBanner::layoutOnMeasure(

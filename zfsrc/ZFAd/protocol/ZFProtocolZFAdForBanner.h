@@ -29,6 +29,11 @@ public:
     /** @brief destroy native ad */
     virtual void nativeAdDestroy(ZF_IN ZFAdForBanner *ad) zfpurevirtual;
 
+    /** @brief owner attached to view tree */
+    virtual void nativeAdAttach(ZF_IN ZFAdForBanner *ad) {}
+    /** @brief owner detached from view tree */
+    virtual void nativeAdDetach(ZF_IN ZFAdForBanner *ad) {}
+
     /** @brief destroy native ad */
     virtual ZFUISize nativeAdMeasure(
             ZF_IN ZFAdForBanner *ad
