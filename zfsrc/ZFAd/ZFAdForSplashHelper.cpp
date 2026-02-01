@@ -17,12 +17,17 @@ public:
     ZFCoreArray<Cfg> cfgList;
     zfautoT<ZFAdForSplash> impl; // current impl, may be null
     zfindex index; // next index to try, may exceed cfgList
-    zfobj<ZFObject> observerOwner;
 
+    zfobj<ZFObject> observerOwner;
     zfweakT<ZFUIRootWindow> window;
     zftimet startTime; // 0 when not started
     zfautoT<ZFUIWindow> bgWindow;
     zfauto holder; // retained during running
+
+    zftimet silentDurationBegin; // last time has showed ad
+    zfauto attachObserverOwner; // not null if attached
+    zfauto attachHolder; // retained during attached
+
 public:
     _ZFP_ZFAdForSplashHelperPrivate(void)
     : cfgList()
@@ -33,6 +38,9 @@ public:
     , startTime()
     , bgWindow()
     , holder()
+    , silentDurationBegin(zftimetInvalid())
+    , attachObserverOwner()
+    , attachHolder()
     {
     }
 public:
@@ -79,6 +87,8 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfanyT<ZFUIRootWindow>, window) {
 ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, ZFAdForSplashHelper *, window
         , ZFMP_IN(ZFUIRootWindow *, v)
         ) {
+    ZFCoreAssertWithMessageTrim(!this->started(), "can not change window when started");
+    ZFCoreAssertWithMessageTrim(!this->attached(), "can not change window when attached");
     d->window = v;
     return this;
 }
@@ -231,6 +241,44 @@ void ZFAdForSplashHelper::objectOnInit(void) {
 void ZFAdForSplashHelper::objectOnDealloc(void) {
     zfpoolDelete(d);
     zfsuper::objectOnDealloc();
+}
+
+// ============================================================
+ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
+    zfscopeRelease(zfRetain(this));
+    this->detach();
+
+    d->attachObserverOwner = zfobj<ZFObject>();
+    d->attachHolder = this;
+    zfself *owner = this;
+    ZFLISTENER_1(windowOnShow
+            , zfweakT<zfself>, owner
+            ) {
+        zftimet curTime = ZFTime::currentTime();
+        if(owner->d->silentDurationBegin == zftimetInvalid()
+                || curTime - owner->d->silentDurationBegin > owner->silentDuration()
+                ) {
+            owner->d->silentDurationBegin = curTime;
+            owner->start();
+        }
+    } ZFLISTENER_END()
+    ZFObserverGroup(d->attachObserverOwner, this->window())
+        .observerAdd(ZFUIRootWindow::E_WindowOnResume(), windowOnShow)
+        ;
+    if(this->window()->windowResumed()) {
+        windowOnShow.execute();
+    }
+}
+ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, detach) {
+    if(d->attachObserverOwner) {
+        ZFObserverGroupRemove(d->attachObserverOwner);
+        ZFObserverGroupRemove(d->attachObserverOwner);
+        d->attachObserverOwner = zfnull;
+        d->attachHolder = zfnull;
+    }
+}
+ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfbool, attached) {
+    return d->attachObserverOwner;
 }
 
 ZF_NAMESPACE_GLOBAL_END

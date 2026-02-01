@@ -90,7 +90,7 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         }
         this->observerNotify(zfself::E_AdOnStart(), window);
 
-        if(window->nativeWindowIsCreated()) {
+        if(window->windowCreated()) {
             d->impl->nativeAdStart(this, window);
         }
         else {

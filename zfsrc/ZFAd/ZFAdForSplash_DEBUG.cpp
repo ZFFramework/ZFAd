@@ -21,10 +21,9 @@ public:
             adWindow->bgColor(ZFUIColorRandom(0.9f));
             adWindow->windowLevel(ZFUIWindowLevelOverlay());
 
-            ZFLISTENER_3(onDisplay
+            ZFLISTENER_2(onDisplay
                     , zfautoT<ZFUIWindow>, adWindow
                     , zfweakT<ZFAdForSplash>, ad
-                    , zfweakT<ZFUIRootWindow>, window
                     ) {
                 adWindow->show();
                 ZFAdForSplashImpl::implForAd(ad)->notifyAdOnDisplay(ad);

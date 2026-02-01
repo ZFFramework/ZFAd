@@ -90,6 +90,32 @@ public:
             ZFMP_IN(ZFUIRootWindow *, window)
             )
 
+    // ============================================================
+public:
+    /**
+     * @brief after showing a splash ad,
+     *   do not show again during this duration (affect by #attach only)
+     */
+    ZFPROPERTY_ASSIGN(zftimet, silentDuration, zftimetOneMinute() * 5)
+
+public:
+    /**
+     * @brief more convenient method to manage splash ad
+     *
+     * how it works:
+     * -# attach observers to #window
+     * -# auto #start when #window show, according to #silentDuration
+     */
+    ZFMETHOD_DECLARE_0(void, attach)
+    /**
+     * @brief see #attach
+     */
+    ZFMETHOD_DECLARE_0(void, detach)
+    /**
+     * @brief see #attach
+     */
+    ZFMETHOD_DECLARE_0(zfbool, attached)
+
 protected:
     zfoverride
     virtual void objectOnInit(void);
