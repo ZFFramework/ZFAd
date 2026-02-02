@@ -33,6 +33,7 @@ zfclassFwd _ZFP_ZFAdForBannerHelperPrivate;
  *
  * how it works:
  * -# try each config if env matches, in order
+ *   -  systemName/localeName/localeLangName are matched by #ZFRegExpMatch
  * -# try next one if some impl failed
  * -# if unable to display any ad, or closed by user,
  *   measure to zero size

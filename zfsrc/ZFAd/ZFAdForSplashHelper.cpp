@@ -55,6 +55,21 @@ public:
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForSplashHelper)
 
+ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFAdForSplashHelper>, instance
+        , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
+        ) {
+    if(window == zfnull) {
+        window = ZFUIRootWindow::mainWindow();
+    }
+    zfautoT<ZFAdForSplashHelper> ret = window->objectTag("_ZFP_ZFAdForSplashHelper_instance");
+    if(!ret) {
+        ret = zfobj<ZFAdForSplashHelper>();
+        ret->d->window = window;
+        window->objectTag("_ZFP_ZFAdForSplashHelper_instance", ret);
+    }
+    return ret;
+}
+
 ZFMETHOD_DEFINE_6(ZFAdForSplashHelper, ZFAdForSplashHelper *, cfg
         , ZFMP_IN(const zfstring &, implName)
         , ZFMP_IN(const zfstring &, appId)
@@ -82,15 +97,7 @@ ZFMETHOD_DEFINE_6(ZFAdForSplashHelper, ZFAdForSplashHelper *, cfg
 }
 
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfanyT<ZFUIRootWindow>, window) {
-    return d->window ? d->window.asAny() : ZFUIRootWindow::mainWindow();
-}
-ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, ZFAdForSplashHelper *, window
-        , ZFMP_IN(ZFUIRootWindow *, v)
-        ) {
-    ZFCoreAssertWithMessageTrim(!this->started(), "can not change window when started");
-    ZFCoreAssertWithMessageTrim(!this->attached(), "can not change window when attached");
-    d->window = v;
-    return this;
+    return d->window ? d->window.get() : ZFUIRootWindow::mainWindow();
 }
 
 ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
@@ -131,21 +138,21 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             do {
                 if(cfg.systemName) {
                     zfstring systemName = ZFEnvInfo::systemName();
-                    if(systemName && systemName != cfg.systemName) {
+                    if(systemName && !ZFRegExpMatch(systemName, cfg.systemName)) {
                         break;
                     }
                 }
 
                 if(cfg.localeName) {
                     zfstring localeName = ZFEnvInfo::localeInfo();
-                    if(localeName && localeName != cfg.localeName) {
+                    if(localeName && !ZFRegExpMatch(localeName, cfg.localeName)) {
                         break;
                     }
                 }
 
                 if(cfg.localeLangName) {
                     zfstring localeLangName = ZFEnvInfo::localeLangInfo();
-                    if(localeLangName && localeLangName != cfg.localeLangName) {
+                    if(localeLangName && !ZFRegExpMatch(localeLangName, cfg.localeLangName)) {
                         break;
                     }
                 }
@@ -214,6 +221,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                 owner->d->bgWindow->hide();
                 owner->d->bgWindow = zfnull;
             }
+            if(resultType->zfv() == v_ZFResultType::e_Fail) {
+                owner->observerNotify(ZFAdForSplash::E_AdOnError(), errorHint);
+            }
             owner->observerNotify(ZFAdForSplash::E_AdOnStop(), resultType, errorHint);
             owner->d->holder = zfnull;
         }
@@ -222,12 +232,6 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfbool, started) {
     return d->startTime != 0;
-}
-
-ZFOBJECT_ON_INIT_DEFINE_1(ZFAdForSplashHelper
-        , ZFMP_IN(ZFUIRootWindow *, window)
-        ) {
-    this->window(window);
 }
 
 void ZFAdForSplashHelper::objectOnInit(void) {
@@ -267,7 +271,6 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, detach) {
     if(d->attachObserverOwner) {
-        ZFObserverGroupRemove(d->attachObserverOwner);
         ZFObserverGroupRemove(d->attachObserverOwner);
         d->attachObserverOwner = zfnull;
         d->attachHolder = zfnull;

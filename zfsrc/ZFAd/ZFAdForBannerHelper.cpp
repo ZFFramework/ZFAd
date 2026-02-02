@@ -64,21 +64,21 @@ public:
         do {
             if(cfg.systemName) {
                 zfstring systemName = ZFEnvInfo::systemName();
-                if(systemName && systemName != cfg.systemName) {
+                if(systemName && !ZFRegExpMatch(systemName, cfg.systemName)) {
                     break;
                 }
             }
 
             if(cfg.localeName) {
                 zfstring localeName = ZFEnvInfo::localeInfo();
-                if(localeName && localeName != cfg.localeName) {
+                if(localeName && !ZFRegExpMatch(localeName, cfg.localeName)) {
                     break;
                 }
             }
 
             if(cfg.localeLangName) {
                 zfstring localeLangName = ZFEnvInfo::localeLangInfo();
-                if(localeLangName && localeLangName != cfg.localeLangName) {
+                if(localeLangName && !ZFRegExpMatch(localeLangName, cfg.localeLangName)) {
                     break;
                 }
             }

@@ -17,27 +17,35 @@ zfclassFwd _ZFP_ZFAdForSplashHelperPrivate;
  * different envs may require different appId/adId configs,
  * use this helper class to config quickly:
  * @code
- *   zfobj<ZFAdForSplashHelper> ad;
- *   ad
- *      ->cfg("implName 1", "appId 1", "adId 1", "iOS")
- *      ->cfg("implName 2", "appId 2", "adId 2", "Android", "CN")
- *      ->cfg("implName 3", "appId 3", "adId 3", "Android", "US")
- *      ;
- *
- *   // simply start the ad
- *   // the helper would try each config and:
- *   // * display #ZFAdForSplashHelper::bg during ad loading
- *   // * display ad if success
- *   ad->start();
+ *   ZFAdForSplashHelper::instance()
+ *       // each config
+ *       ->c_cfg("implName 1", "appId 1", "adId 1", "iOS")
+ *       ->c_cfg("implName 2", "appId 2", "adId 2", "Android", "CN")
+ *       ->c_cfg("implName 3", "appId 3", "adId 3", "Android", "US")
+ *       // simply attach the ad, the helper would:
+ *       // * start the ad when window showed
+ *       // * try each config and:
+ *       //     * display #ZFAdForSplashHelper::bg during ad loading
+ *       //     * display ad if success
+ *       ->attach();
  * @endcode
  *
  * how it works:
  * -# try each config if env matches, in order
+ *   -  systemName/localeName/localeLangName are matched by #ZFRegExpMatch
  * -# try next one if some impl failed
- * -# simulate all events of #ZFAdForSplash, except #ZFAdForSplash::E_AdOnError
+ * -# simulate all events of #ZFAdForSplash
  */
 zfclass ZFLIB_ZFAd ZFAdForSplashHelper : zfextend ZFObject {
     ZFOBJECT_DECLARE(ZFAdForSplashHelper, ZFObject)
+
+public:
+    /**
+     * @brief access instance
+     */
+    ZFMETHOD_DECLARE_STATIC_1(zfautoT<ZFAdForSplashHelper>, instance
+            , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
+            )
 
 public:
     /**
@@ -57,10 +65,6 @@ public:
      * @brief owner window
      */
     ZFMETHOD_DECLARE_0(zfanyT<ZFUIRootWindow>, window)
-    /** @brief see #window */
-    ZFMETHOD_DECLARE_1(ZFAdForSplashHelper *, window
-            , ZFMP_IN(ZFUIRootWindow *, v)
-            )
 
     /**
      * @brief timeout if no impl can display success
@@ -84,11 +88,6 @@ public:
             )
     /** @brief whether the ad started */
     ZFMETHOD_DECLARE_0(zfbool, started)
-
-    /** @brief init with owner window */
-    ZFOBJECT_ON_INIT_DECLARE_1(
-            ZFMP_IN(ZFUIRootWindow *, window)
-            )
 
     // ============================================================
 public:
