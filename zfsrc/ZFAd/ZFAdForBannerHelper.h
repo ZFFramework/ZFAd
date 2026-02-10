@@ -33,7 +33,7 @@ zfclassFwd _ZFP_ZFAdForBannerHelperPrivate;
  *
  * how it works:
  * -# try each config if env matches, in order
- *   -  systemName/localeName/localeLangName are matched by #ZFRegExpMatch
+ *   -  systemName/localeId/localeLangId are matched by #ZFRegExpMatch
  * -# try next one if some impl failed
  * -# if unable to display any ad, or closed by user,
  *   measure to zero size
@@ -58,8 +58,8 @@ public:
             , ZFMP_IN(const zfstring &, appId)
             , ZFMP_IN(const zfstring &, adId)
             , ZFMP_IN_OPT(const zfstring &, systemName, zfnull)
-            , ZFMP_IN_OPT(const zfstring &, localeName, zfnull)
-            , ZFMP_IN_OPT(const zfstring &, localeLangName, zfnull)
+            , ZFMP_IN_OPT(const zfstring &, localeId, zfnull)
+            , ZFMP_IN_OPT(const zfstring &, localeLangId, zfnull)
             )
 
 protected:

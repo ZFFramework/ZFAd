@@ -32,7 +32,7 @@ zfclassFwd _ZFP_ZFAdForSplashHelperPrivate;
  *
  * how it works:
  * -# try each config if env matches, in order
- *   -  systemName/localeName/localeLangName are matched by #ZFRegExpMatch
+ *   -  systemName/localeId/localeLangId are matched by #ZFRegExpMatch
  * -# try next one if some impl failed
  * -# simulate all events of #ZFAdForSplash
  */
@@ -56,8 +56,8 @@ public:
             , ZFMP_IN(const zfstring &, appId)
             , ZFMP_IN(const zfstring &, adId)
             , ZFMP_IN_OPT(const zfstring &, systemName, zfnull)
-            , ZFMP_IN_OPT(const zfstring &, localeName, zfnull)
-            , ZFMP_IN_OPT(const zfstring &, localeLangName, zfnull)
+            , ZFMP_IN_OPT(const zfstring &, localeId, zfnull)
+            , ZFMP_IN_OPT(const zfstring &, localeLangId, zfnull)
             )
 
 public:

@@ -81,7 +81,7 @@ public:
                 widthHint = 240;
             }
         }
-        return ZFUISizeCreate(sizeHint.width, sizeHint.width * 60 / 240);
+        return ZFUISizeCreate(sizeHint.width, 50);
     }
 };
 ZFOBJECT_REGISTER(ZFAdForBannerImpl_DEBUG)

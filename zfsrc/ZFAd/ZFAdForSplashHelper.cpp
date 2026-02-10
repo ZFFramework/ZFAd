@@ -10,8 +10,8 @@ public:
         zfstring appId;
         zfstring adId;
         zfstring systemName;
-        zfstring localeName;
-        zfstring localeLangName;
+        zfstring localeId;
+        zfstring localeLangId;
     };
 public:
     ZFCoreArray<Cfg> cfgList;
@@ -75,8 +75,8 @@ ZFMETHOD_DEFINE_6(ZFAdForSplashHelper, ZFAdForSplashHelper *, cfg
         , ZFMP_IN(const zfstring &, appId)
         , ZFMP_IN(const zfstring &, adId)
         , ZFMP_IN_OPT(const zfstring &, systemName, zfnull)
-        , ZFMP_IN_OPT(const zfstring &, localeName, zfnull)
-        , ZFMP_IN_OPT(const zfstring &, localeLangName, zfnull)
+        , ZFMP_IN_OPT(const zfstring &, localeId, zfnull)
+        , ZFMP_IN_OPT(const zfstring &, localeLangId, zfnull)
         ) {
     if(zffalse
             || !implName
@@ -90,8 +90,8 @@ ZFMETHOD_DEFINE_6(ZFAdForSplashHelper, ZFAdForSplashHelper *, cfg
     cfg.appId = appId;
     cfg.adId = adId;
     cfg.systemName = systemName;
-    cfg.localeName = localeName;
-    cfg.localeLangName = localeLangName;
+    cfg.localeId = localeId;
+    cfg.localeLangId = localeLangId;
     d->cfgList.add(cfg);
     return this;
 }
@@ -143,16 +143,16 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     }
                 }
 
-                if(cfg.localeName) {
-                    zfstring localeName = ZFEnvInfo::localeInfo();
-                    if(localeName && !ZFRegExpMatch(localeName, cfg.localeName)) {
+                if(cfg.localeId) {
+                    zfstring localeId = ZFEnvInfo::localeId();
+                    if(localeId && !ZFRegExpMatch(localeId, cfg.localeId)) {
                         break;
                     }
                 }
 
-                if(cfg.localeLangName) {
-                    zfstring localeLangName = ZFEnvInfo::localeLangInfo();
-                    if(localeLangName && !ZFRegExpMatch(localeLangName, cfg.localeLangName)) {
+                if(cfg.localeLangId) {
+                    zfstring localeLangId = ZFEnvInfo::localeLangId();
+                    if(localeLangId && !ZFRegExpMatch(localeLangId, cfg.localeLangId)) {
                         break;
                     }
                 }
