@@ -7,6 +7,7 @@ zfclass ZFAdForBannerImpl_DEBUG : zfextend ZFObject, zfimplement ZFAdForBannerIm
     ZFIMPLEMENT_DECLARE(ZFAdForBannerImpl)
 
 private:
+    zfautoT<ZFUIView> _dummy;
     zfautoT<ZFUIView> _view;
     zfautoT<ZFTaskId> _displayDelay;
 
@@ -18,7 +19,6 @@ public:
                 , ZF_IN const zfstring &adId
                 ) {
         _view = zfobj<ZFUIView>();
-        _view->bgColor(ZFUIColorRandom(0.9f));
         ZFLISTENER_1(viewOnEvent
                 , zfweakT<ZFAdForBanner>, ad
                 ) {
@@ -34,7 +34,8 @@ public:
         } ZFLISTENER_END()
         _view->observerAdd(ZFUIView::E_ViewOnEvent(), viewOnEvent);
 
-        return _view->nativeView();
+        _dummy = zfobj<ZFUIView>();
+        return _dummy->nativeView();
     }
     zfoverride
     virtual void nativeAdDestroy(ZF_IN ZFAdForBanner *ad) {
@@ -42,7 +43,7 @@ public:
             _displayDelay->stop();
             _displayDelay = zfnull;
         }
-        _view = zfnull;
+        _dummy = zfnull;
     }
 
     zfoverride
@@ -56,6 +57,7 @@ public:
                 , zfweakT<ZFAdForBanner>, ad
                 ) {
             owner->_displayDelay = zfnull;
+            owner->_view->bgColor(ZFUIColorRandom(0.9f));
             ZFAdForBannerImpl::implForAd(ad)->notifyAdOnDisplay(ad);
         } ZFLISTENER_END()
         _displayDelay = ZFTimerOnce(1000, onDisplay);
