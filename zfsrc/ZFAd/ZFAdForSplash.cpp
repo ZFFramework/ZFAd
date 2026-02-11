@@ -84,7 +84,7 @@ ZFMETHOD_DEFINE_2(ZFAdForSplash, void, start
         }
 
         d->started = zftrue;
-        zfRetain(this);
+        zfobjRetain(this);
         if(window == zfnull) {
             window = ZFUIRootWindow::mainWindow();
         }
@@ -155,7 +155,7 @@ void ZFAdForSplash::_ZFP_ZFAdForSplash_stop(
             this->observerNotify(zfself::E_AdOnError(), zfobj<v_zfstring>(errorHint));
         }
         this->observerNotify(zfself::E_AdOnStop(), zfobj<v_ZFResultType>(resultType), zfobj<v_zfstring>(errorHint));
-        zfRelease(this);
+        zfobjRelease(this);
     }
 }
 

@@ -245,7 +245,7 @@ void ZFAdForSplashHelper::objectOnDealloc(void) {
 
 // ============================================================
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
-    zfscopeRelease(zfRetain(this));
+    zfobjReleaseInScope(zfobjRetain(this));
     this->detach();
 
     d->attachObserverOwner = zfobj<ZFObject>();
