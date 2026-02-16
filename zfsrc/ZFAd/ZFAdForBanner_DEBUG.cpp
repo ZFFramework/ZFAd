@@ -33,6 +33,7 @@ public:
             ZFAdForBannerImpl::implForAd(ad)->notifyAdOnClose(ad);
         } ZFLISTENER_END()
         _view->observerAdd(ZFUIView::E_ViewOnEvent(), viewOnEvent);
+        ad->internalBgViewAdd(_view)->sizeFill();
 
         _dummy = zfobj<ZFUIView>();
         return _dummy->nativeView();
@@ -43,6 +44,7 @@ public:
             _displayDelay->stop();
             _displayDelay = zfnull;
         }
+        _view = zfnull;
         _dummy = zfnull;
     }
 
@@ -83,7 +85,7 @@ public:
                 widthHint = 240;
             }
         }
-        return ZFUISizeCreate(sizeHint.width, 50);
+        return ZFUISizeCreate(sizeHint.width, ZFUISizeApplyScale(50, ad->UIScaleFixed()));
     }
 };
 ZFOBJECT_REGISTER(ZFAdForBannerImpl_DEBUG)
