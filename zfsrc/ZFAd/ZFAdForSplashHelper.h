@@ -25,7 +25,7 @@ zfclassFwd _ZFP_ZFAdForSplashHelperPrivate;
  *       // simply attach the ad, the helper would:
  *       // * start the ad when window showed
  *       // * try each config and:
- *       //     * display #ZFAdForSplashHelper::bg during ad loading
+ *       //     * display #ZFAdForSplashHelper::loadingView during ad loading
  *       //     * display ad if success
  *       ->attach();
  * @endcode
@@ -71,10 +71,18 @@ public:
      */
     ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
     /**
-     * @brief bg content displaying during ad loading,
+     * @brief content displaying during ad loading,
      *   null would result to a plain black color view
      */
-    ZFPROPERTY_RETAIN(zfanyT<ZFUIView>, bg)
+    ZFPROPERTY_RETAIN(zfanyT<ZFUIView>, loadingView)
+
+    /**
+     * @brief util to set #loadingView by a bouncing icon
+     */
+    ZFMETHOD_DECLARE_2(void, loadingIcon
+            , ZFMP_IN(ZFUIImage *, icon)
+            , ZFMP_IN_OPT(ZFUIColor, bgColor, ZFUIColorCreateRGB(0x000000))
+            )
 
 public:
     /**

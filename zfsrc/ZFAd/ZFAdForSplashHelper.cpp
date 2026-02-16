@@ -21,7 +21,7 @@ public:
     zfobj<ZFObject> observerOwner;
     zfweakT<ZFUIRootWindow> window;
     zftimet startTime; // 0 when not started
-    zfautoT<ZFUIWindow> bgWindow;
+    zfautoT<ZFUIWindow> loadingViewWindow;
     zfauto holder; // retained during running
 
     zftimet silentDurationBegin; // last time has showed ad
@@ -36,7 +36,7 @@ public:
     , observerOwner()
     , window()
     , startTime()
-    , bgWindow()
+    , loadingViewWindow()
     , holder()
     , silentDurationBegin(zftimetInvalid())
     , attachObserverOwner()
@@ -107,16 +107,16 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         return;
     }
     d->holder = this;
-    d->bgWindow = zfobj<ZFUIWindow>(this->window());
-    d->bgWindow->viewId("ZFAdForSplashBg");
-    d->bgWindow->bgColor(ZFUIColorCreateRGB(0x000000));
-    d->bgWindow->windowLevel(ZFUIWindowLevelOverlay() - 1);
-    d->bgWindow->windowMarginShouldApply(zffalse);
-    if(this->bg()) {
-        this->bg()->removeFromParent();
-        d->bgWindow->child(this->bg())->sizeFill();
+    d->loadingViewWindow = zfobj<ZFUIWindow>(this->window());
+    d->loadingViewWindow->viewId("ZFAdForSplashLoadingView");
+    d->loadingViewWindow->bgColor(ZFUIColorCreateRGB(0x000000));
+    d->loadingViewWindow->windowLevel(ZFUIWindowLevelOverlay() - 1);
+    d->loadingViewWindow->windowMarginShouldApply(zffalse);
+    if(this->loadingView()) {
+        this->loadingView()->removeFromParent();
+        d->loadingViewWindow->child(this->loadingView())->sizeFill();
     }
-    d->bgWindow->show();
+    d->loadingViewWindow->show();
 
     d->startTime = ZFTime::currentTime();
     this->observerNotify(ZFAdForSplash::E_AdOnStart(), this->window());
@@ -181,6 +181,10 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
+                if(weakOwner->d->loadingViewWindow) {
+                    weakOwner->d->loadingViewWindow->hide();
+                    weakOwner->d->loadingViewWindow = zfnull;
+                }
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 
@@ -217,9 +221,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->index = 0;
             owner->d->startTime = 0;
             owner->d->implStop();
-            if(owner->d->bgWindow) {
-                owner->d->bgWindow->hide();
-                owner->d->bgWindow = zfnull;
+            if(owner->d->loadingViewWindow) {
+                owner->d->loadingViewWindow->hide();
+                owner->d->loadingViewWindow = zfnull;
             }
             if(resultType->zfv() == v_ZFResultType::e_Fail) {
                 owner->observerNotify(ZFAdForSplash::E_AdOnError(), errorHint);
@@ -278,6 +282,59 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, detach) {
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfbool, attached) {
     return d->attachObserverOwner;
+}
+
+// ============================================================
+ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, loadingIcon
+        , ZFMP_IN(ZFUIImage *, icon)
+        , ZFMP_IN_OPT(ZFUIColor, bgColor, ZFUIColorCreateRGB(0x000000))
+        ) {
+    zfobj<ZFUIView> container;
+    container->bgColor(bgColor);
+    this->loadingView(container);
+
+    zfobj<ZFUIImageView> view;
+    container->child(view)->alignCenter();
+    view->image(icon);
+
+    zfobj<ZFAniQueue> ani;
+    ZFLISTENER_1(onUpdate
+            , zfautoT<ZFAnimation>, ani
+            ) {
+        ZFUIView *owner = zfargs.sender();
+        if(owner->viewTreeInWindow()) {
+            if(!ani->started()) {
+                ani->target(owner);
+                ani->start();
+            }
+        }
+        else {
+            if(ani->started()) {
+                ani->stop();
+            }
+        }
+    } ZFLISTENER_END()
+    view->observerAdd(ZFUIView::E_ViewTreeInWindowOnUpdate(), onUpdate);
+
+    zftimet dOffset = 800;
+    zftimet dScale = 80;
+    zffloat offset = 48;
+    zffloat scale = 0.2f;
+    ani->loop(zfindexMax());
+    ani
+        ->c_child(ZFAni("translateY", zfobj<v_zffloat>(0), zfobj<v_zffloat>(-offset))->c_curve(zfobj<ZFCurveEaseOut>())->c_duration(dOffset))
+        ->c_child(ZFAni("translateY", zfobj<v_zffloat>(-offset), zfobj<v_zffloat>(0))->c_curve(zfobj<ZFCurveEaseIn>())->c_duration(dOffset))
+        ->c_child(zfobj<ZFAniGroup>()
+                ->c_child(ZFAni("scaleX", zfobj<v_zffloat>(1), zfobj<v_zffloat>(1 + scale)))
+                ->c_child(ZFAni("scaleY", zfobj<v_zffloat>(1), zfobj<v_zffloat>(1 - scale)))
+                ->c_duration(dScale)
+                )
+        ->c_child(zfobj<ZFAniGroup>()
+                ->c_child(ZFAni("scaleX", zfobj<v_zffloat>(1 + scale), zfobj<v_zffloat>(1)))
+                ->c_child(ZFAni("scaleY", zfobj<v_zffloat>(1 - scale), zfobj<v_zffloat>(1)))
+                ->c_duration(dScale)
+                )
+        ;
 }
 
 ZF_NAMESPACE_GLOBAL_END
