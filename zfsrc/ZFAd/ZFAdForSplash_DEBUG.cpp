@@ -30,7 +30,7 @@ public:
                 ZFTask *task = zfargs.sender();
                 task->notifySuccess();
             } ZFLISTENER_END()
-            task->child(zfobj<ZFWaitTask>(1000));
+            task->child(zfobj<ZFWaitTask>(1500));
             task->child(onDisplay);
 
             ZFLISTENER_2(onStop

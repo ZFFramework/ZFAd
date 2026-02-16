@@ -109,7 +109,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
     d->holder = this;
     d->bgWindow = zfobj<ZFUIWindow>(this->window());
     d->bgWindow->viewId("ZFAdForSplashBg");
-    d->bgWindow->bgColor(ZFUIColorCreateRGB(0xFFFFFF));
+    d->bgWindow->bgColor(ZFUIColorCreateRGB(0x000000));
     d->bgWindow->windowLevel(ZFUIWindowLevelOverlay() - 1);
     d->bgWindow->windowMarginShouldApply(zffalse);
     if(this->bg()) {

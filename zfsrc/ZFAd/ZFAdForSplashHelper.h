@@ -72,7 +72,7 @@ public:
     ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
     /**
      * @brief bg content displaying during ad loading,
-     *   null would result to a plain white color view
+     *   null would result to a plain black color view
      */
     ZFPROPERTY_RETAIN(zfanyT<ZFUIView>, bg)
 
