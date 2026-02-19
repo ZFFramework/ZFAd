@@ -108,6 +108,18 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
     if(this->started()) {
         return;
     }
+
+    if(this->skipCount() > 0) {
+        zfindex count = zfindexMax();
+        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
+        if(countStr) {
+            zfindexFromStringT(count, countStr);
+        }
+        if(count < this->skipCount()) {
+            return;
+        }
+    }
+
     d->holder = this;
     d->loadingViewWindow = zfobj<ZFUIWindow>(this->window());
     d->loadingViewWindow->viewId("ZFAdForSplashLoadingView");
@@ -268,6 +280,15 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
     zfobjReleaseInScope(zfobjRetain(this));
     this->detach();
 
+    {
+        zfindex count = zfindexMax();
+        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
+        if(countStr) {
+            zfindexFromStringT(count, countStr);
+        }
+        ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
+    }
+
     d->attachObserverOwner = zfobj<ZFObject>();
     d->attachHolder = this;
     zfself *owner = this;
@@ -351,6 +372,50 @@ ZFMETHOD_DEFINE_2(ZFAdForSplashHelper, void, loadingIcon
                 ->c_duration(dScale)
                 )
         ;
+}
+
+// ============================================================
+ZFMETHOD_FUNC_DEFINE_1(zfautoT<ZFTask>, ZFAdForSplashTask
+        , ZFMP_IN(ZFAdForSplashHelper *, ad)
+        ) {
+    zfobj<ZFObject> observerHolder;
+
+    ZFLISTENER_2(onStart
+            , zfauto, observerHolder
+            , zfautoT<ZFAdForSplashHelper>, ad
+            ) {
+        ZFTask *ownerTask = zfargs.sender();
+        ad->attach();
+        if(ad->window()->windowResumed() && !ad->started()) {
+            ownerTask->notifySuccess();
+            return;
+        }
+        ZFLISTENER_1(adOnStop
+                , zfweakT<ZFTask>, ownerTask
+                ) {
+            if(ownerTask) {
+                ownerTask->notifySuccess();
+            }
+        } ZFLISTENER_END()
+        ZFObserverGroup(observerHolder, ad)
+            .observerAdd(ZFAdForSplash::E_AdOnDisplay(), adOnStop)
+            .observerAdd(ZFAdForSplash::E_AdOnError(), adOnStop)
+            .observerAdd(ZFAdForSplash::E_AdOnStop(), adOnStop)
+            ;
+
+        ZFTimerOnce(3000, adOnStop);
+    } ZFLISTENER_END()
+
+    ZFLISTENER_1(onStop
+            , zfauto, observerHolder
+            ) {
+        ZFObserverGroupRemove(observerHolder);
+    } ZFLISTENER_END()
+
+    zfobj<ZFTask> task;
+    task->observerAdd(ZFTask::E_TaskOnStart(), onStart);
+    task->observerAdd(ZFTask::E_TaskOnStop(), onStop);
+    return task;
 }
 
 ZF_NAMESPACE_GLOBAL_END

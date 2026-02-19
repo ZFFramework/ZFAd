@@ -67,6 +67,13 @@ public:
     ZFMETHOD_DECLARE_0(zfanyT<ZFUIRootWindow>, window)
 
     /**
+     * @brief do not show ad for this count
+     *
+     * note: you must have #ZFState::ready before #ZFAdForSplashHelper::attach
+     * to make this logic working
+     */
+    ZFPROPERTY_ASSIGN(zfindex, skipCount, 1)
+    /**
      * @brief timeout if no impl can display success
      */
     ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
@@ -132,6 +139,16 @@ protected:
 private:
     _ZFP_ZFAdForSplashHelperPrivate *d;
 };
+
+// ============================================================
+/**
+ * @brief util to create a task for ZFAdForSplashHelper
+ *
+ * note, the ad must not #ZFAdForSplashHelper::attached
+ */
+ZFMETHOD_FUNC_DECLARE_1(ZFLIB_ZFAd, zfautoT<ZFTask>, ZFAdForSplashTask
+        , ZFMP_IN(ZFAdForSplashHelper *, ad)
+        )
 
 ZF_NAMESPACE_GLOBAL_END
 #endif // #ifndef _ZFI_ZFAdForSplashHelper_h_
