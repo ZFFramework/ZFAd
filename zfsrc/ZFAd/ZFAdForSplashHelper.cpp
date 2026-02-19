@@ -22,6 +22,7 @@ public:
     zfweakT<ZFUIRootWindow> window;
     zftimet startTime; // 0 when not started
     zfautoT<ZFUIWindow> loadingViewWindow;
+    zfautoT<ZFTimer> loadingViewWindowHideDelay;
     zfauto holder; // retained during running
 
     zftimet silentDurationBegin; // last time has showed ad
@@ -37,6 +38,7 @@ public:
     , window()
     , startTime()
     , loadingViewWindow()
+    , loadingViewWindowHideDelay()
     , holder()
     , silentDurationBegin(zftimetInvalid())
     , attachObserverOwner()
@@ -181,10 +183,20 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
-                if(weakOwner->d->loadingViewWindow) {
-                    weakOwner->d->loadingViewWindow->hide();
-                    weakOwner->d->loadingViewWindow = zfnull;
+
+                if(weakOwner->d->loadingViewWindowHideDelay) {
+                    weakOwner->d->loadingViewWindowHideDelay->stop();
                 }
+                ZFLISTENER_1(loadingViewWindowOnDelayHide
+                        , zfweakT<ZFAdForSplashHelper>, weakOwner
+                        ) {
+                    if(weakOwner->d->loadingViewWindow) {
+                        weakOwner->d->loadingViewWindow->hide();
+                        weakOwner->d->loadingViewWindow = zfnull;
+                    }
+                } ZFLISTENER_END()
+                weakOwner->d->loadingViewWindowHideDelay = ZFTimerOnce(200, loadingViewWindowOnDelayHide);
+
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 
@@ -221,6 +233,10 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->index = 0;
             owner->d->startTime = 0;
             owner->d->implStop();
+            if(owner->d->loadingViewWindowHideDelay) {
+                owner->d->loadingViewWindowHideDelay->stop();
+                owner->d->loadingViewWindowHideDelay = zfnull;
+            }
             if(owner->d->loadingViewWindow) {
                 owner->d->loadingViewWindow->hide();
                 owner->d->loadingViewWindow = zfnull;
