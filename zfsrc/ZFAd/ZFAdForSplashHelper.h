@@ -91,6 +91,15 @@ public:
             , ZFMP_IN_OPT(ZFUIColor, bgColor, ZFUIColorCreateRGB(0x000000))
             )
 
+    /**
+     * @brief explicitly show the #loadingView, must paired with #loadingViewHide
+     */
+    ZFMETHOD_DECLARE_0(void, loadingViewShow)
+    /**
+     * @brief see #loadingViewShow
+     */
+    ZFMETHOD_DECLARE_0(void, loadingViewHide)
+
 public:
     /**
      * @brief start the ad, auto retain until stop
@@ -138,6 +147,7 @@ protected:
 
 private:
     _ZFP_ZFAdForSplashHelperPrivate *d;
+    friend zfclassFwd _ZFP_ZFAdForSplashHelperPrivate;
 };
 
 // ============================================================
@@ -146,8 +156,21 @@ private:
  *
  * note, the ad must not #ZFAdForSplashHelper::attached
  */
-ZFMETHOD_FUNC_DECLARE_1(ZFLIB_ZFAd, zfautoT<ZFTask>, ZFAdForSplashTask
-        , ZFMP_IN(ZFAdForSplashHelper *, ad)
+ZFMETHOD_FUNC_DECLARE_2(ZFLIB_ZFAd, zfautoT<ZFTask>, ZFAdForSplashTask
+        , ZFMP_IN_OPT(ZFAdForSplashHelper *, ad, zfnull)
+        , ZFMP_IN_OPT(zfbool, finishWhenDisplay, zftrue)
+        )
+/**
+ * @brief util to create a task for #ZFAdForSplashHelper::loadingViewShow
+ */
+ZFMETHOD_FUNC_DECLARE_1(ZFLIB_ZFAd, zfautoT<ZFTask>, ZFAdForSplashLoadingShowTask
+        , ZFMP_IN_OPT(ZFAdForSplashHelper *, ad, zfnull)
+        )
+/**
+ * @brief util to create a task for #ZFAdForSplashHelper::loadingViewHide
+ */
+ZFMETHOD_FUNC_DECLARE_1(ZFLIB_ZFAd, zfautoT<ZFTask>, ZFAdForSplashLoadingHideTask
+        , ZFMP_IN_OPT(ZFAdForSplashHelper *, ad, zfnull)
         )
 
 ZF_NAMESPACE_GLOBAL_END
