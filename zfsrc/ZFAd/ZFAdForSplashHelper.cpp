@@ -102,7 +102,7 @@ private:
                 owner->d->loadingViewWindow = zfnull;
             }
         } ZFLISTENER_END()
-        this->loadingViewWindowHideDelay = ZFTimerOnce(200, loadingViewWindowOnDelayHide);
+        this->loadingViewWindowHideDelay = ZFTimerOnce(500, loadingViewWindowOnDelayHide);
     }
 };
 
