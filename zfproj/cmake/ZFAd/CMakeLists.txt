@@ -33,6 +33,8 @@ function(ZFAddLib ZF_LIB_NAME_)
 endfunction()
 
 ZFAddLib(ZFCore)
+ZFAddLib(ZFUtility)
+ZFAddLib(ZFAlgorithm)
 ZFAddLib(ZFUIKit)
 
 install(

@@ -54,6 +54,8 @@ android {
 dependencies {
     implementation fileTree(includes: ['*.jar'], dir: 'libs')
     compileOnly fileTree(includes: ['*.jar'], dir: ZF_ROOT_PATH + '/_release/Android/module/ZFCore/src/main/libs')
+    compileOnly fileTree(includes: ['*.jar'], dir: ZF_ROOT_PATH + '/_release/Android/module/ZFUtility/src/main/libs')
+    compileOnly fileTree(includes: ['*.jar'], dir: ZF_ROOT_PATH + '/_release/Android/module/ZFAlgorithm/src/main/libs')
     compileOnly fileTree(includes: ['*.jar'], dir: ZF_ROOT_PATH + '/_release/Android/module/ZFUIKit/src/main/libs')
 }
 

@@ -29,5 +29,7 @@ endfunction()
 
 
 ZFAddLib(ZFCore)
+ZFAddLib(ZFUtility)
+ZFAddLib(ZFAlgorithm)
 ZFAddLib(ZFUIKit)
 
