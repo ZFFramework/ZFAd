@@ -22,6 +22,7 @@ public:
     zfobj<ZFObject> observerOwner;
     zfweakT<ZFUIRootWindow> window;
     zftimet startTime; // 0 when not started
+    zfbool implShowing;
     zfbool loadingViewShowFlag;
     zfuint loadingViewManualShowFlag;
     zfautoT<ZFUIWindow> loadingViewWindow;
@@ -40,6 +41,7 @@ public:
     , observerOwner()
     , window()
     , startTime()
+    , implShowing(zffalse)
     , loadingViewShowFlag(zffalse)
     , loadingViewManualShowFlag(0)
     , loadingViewWindow()
@@ -56,6 +58,7 @@ public:
             ZFObserverGroupRemove(this->observerOwner);
             this->impl = zfnull;
         }
+        this->implShowing = zffalse;
     }
     void loadingViewUpdate(void) {
         if(this->loadingViewWindowHideDelay) {
@@ -231,6 +234,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
+                weakOwner->d->implShowing = zffalse;
                 weakOwner->d->implStop();
                 tryNext(weakOwner);
             } ZFLISTENER_END()
@@ -239,6 +243,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
+                weakOwner->d->implShowing = zftrue;
                 weakOwner->d->loadingViewShowFlag = zffalse;
                 weakOwner->d->loadingViewUpdate();
                 weakOwner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
@@ -255,6 +260,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                     , zfweakT<ZFAdForSplashHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
+                weakOwner->d->implShowing = zffalse;
                 _stop(weakOwner, zfargs.param0(), zfargs.param1());
             } ZFLISTENER_END()
 
@@ -323,9 +329,10 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
             , zfweakT<zfself>, owner
             ) {
         zftimet curTime = ZFTime::currentTime();
-        if(owner->d->silentDurationBegin == zftimetInvalid()
-                || curTime - owner->d->silentDurationBegin > owner->silentDuration()
-                ) {
+        if(!owner->d->implShowing && (zffalse
+                    || owner->d->silentDurationBegin == zftimetInvalid()
+                    || curTime - owner->d->silentDurationBegin > owner->silentDuration()
+                    )) {
             owner->d->silentDurationBegin = curTime;
             owner->start();
         }
