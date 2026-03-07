@@ -164,15 +164,8 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         return;
     }
 
-    if(this->skipCount() > 0) {
-        zfindex count = zfindexMax();
-        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
-        if(countStr) {
-            zfindexFromStringT(count, countStr);
-        }
-        if(count < this->skipCount()) {
-            return;
-        }
+    if(this->skipped()) {
+        return;
     }
 
     d->holder = this;
@@ -302,6 +295,13 @@ void ZFAdForSplashHelper::objectOnInit(void) {
     zfsuper::objectOnInit();
     d = zfpoolNew(_ZFP_ZFAdForSplashHelperPrivate);
     d->owner = this;
+
+    zfindex count = zfindexMax();
+    zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
+    if(countStr) {
+        zfindexFromStringT(count, countStr);
+    }
+    ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
 }
 void ZFAdForSplashHelper::objectOnDealloc(void) {
     zfpoolDelete(d);
@@ -312,15 +312,6 @@ void ZFAdForSplashHelper::objectOnDealloc(void) {
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
     zfobjReleaseInScope(zfobjRetain(this));
     this->detach();
-
-    {
-        zfindex count = zfindexMax();
-        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
-        if(countStr) {
-            zfindexFromStringT(count, countStr);
-        }
-        ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
-    }
 
     d->attachObserverOwner = zfobj<ZFObject>();
     d->attachHolder = this;
@@ -414,6 +405,20 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, loadingViewShow) {
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, loadingViewHide) {
     --(d->loadingViewManualShowFlag);
     d->loadingViewUpdate();
+}
+
+ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfbool, skipped) {
+    if(this->skipCount() != 0) {
+        zfindex count = zfindexMax();
+        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
+        if(countStr) {
+            zfindexFromStringT(count, countStr);
+        }
+        return (count < this->skipCount());
+    }
+    else {
+        return zffalse;
+    }
 }
 
 // ============================================================

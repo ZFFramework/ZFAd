@@ -100,6 +100,11 @@ public:
      */
     ZFMETHOD_DECLARE_0(void, loadingViewHide)
 
+    /**
+     * @brief whether should be skipped by #skipCount
+     */
+    ZFMETHOD_DECLARE_0(zfbool, skipped)
+
 public:
     /**
      * @brief start the ad, auto retain until stop
