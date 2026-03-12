@@ -82,10 +82,12 @@ private:
         this->loadingViewWindow->viewId("ZFAdForSplashLoadingView");
         this->loadingViewWindow->bgColor(ZFUIColorCreateRGB(0x000000));
         this->loadingViewWindow->windowLevel(ZFUIWindowLevelOverlay() - 1);
-        this->loadingViewWindow->windowMarginShouldApply(zffalse);
         if(owner->loadingView()) {
             owner->loadingView()->removeFromParent();
-            this->loadingViewWindow->child(owner->loadingView())->sizeFill();
+            this->loadingViewWindow->child(owner->loadingView())
+                ->c_safeAreaAdapt(zffalse)
+                ->c_sizeFill()
+                ;
         }
         this->loadingViewWindow->show();
     }
