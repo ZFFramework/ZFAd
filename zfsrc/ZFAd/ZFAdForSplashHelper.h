@@ -101,7 +101,8 @@ public:
     ZFMETHOD_DECLARE_0(void, loadingViewHide)
 
     /**
-     * @brief whether should be skipped by #skipCount
+     * @brief whether should be skipped by #skipCount,
+     *   valid only after #ZFState::ready
      */
     ZFMETHOD_DECLARE_0(zfbool, skipped)
 

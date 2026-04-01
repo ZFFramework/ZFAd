@@ -166,10 +166,6 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         return;
     }
 
-    if(this->skipped()) {
-        return;
-    }
-
     d->holder = this;
     d->loadingViewShowFlag = zftrue;
     d->loadingViewUpdate();
@@ -298,12 +294,15 @@ void ZFAdForSplashHelper::objectOnInit(void) {
     d = zfpoolNew(_ZFP_ZFAdForSplashHelperPrivate);
     d->owner = this;
 
-    zfindex count = zfindexMax();
-    zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
-    if(countStr) {
-        zfindexFromStringT(count, countStr);
-    }
-    ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
+    ZFLISTENER(onLoad) {
+        zfindex count = zfindexMax();
+        zfstring countStr = ZFState::instance()->get("ZFAdForSplashHelper_skipCount");
+        if(countStr) {
+            zfindexFromStringT(count, countStr);
+        }
+        ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
+    } ZFLISTENER_END()
+    ZFState::instance()->load(onLoad);
 }
 void ZFAdForSplashHelper::objectOnDealloc(void) {
     zfpoolDelete(d);
@@ -318,11 +317,16 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
     d->attachObserverOwner = zfobj<ZFObject>();
     d->attachHolder = this;
     zfself *owner = this;
-    ZFLISTENER_1(windowOnShow
+    ZFLISTENER_1(checkStart
             , zfweakT<zfself>, owner
             ) {
         zftimet curTime = ZFTime::currentTime();
-        if(!owner->d->implShowing && (zffalse
+        if(zftrue
+                && ZFState::instance()->ready()
+                && owner->attached()
+                && !owner->d->implShowing
+                && !owner->skipped()
+                && (zffalse
                     || owner->d->silentDurationBegin == zftimetInvalid()
                     || curTime - owner->d->silentDurationBegin > owner->silentDuration()
                     )) {
@@ -331,10 +335,21 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
         }
     } ZFLISTENER_END()
     ZFObserverGroup(d->attachObserverOwner, this->window())
-        .observerAdd(ZFUIRootWindow::E_WindowOnResume(), windowOnShow)
+        .observerAdd(ZFUIRootWindow::E_WindowOnResume(), checkStart)
         ;
-    if(this->window()->windowResumed()) {
-        windowOnShow.execute();
+    if(!ZFState::instance()->ready()) {
+        ZFLISTENER_2(onReady
+                , zfweakT<zfself>, owner
+                , ZFListener, checkStart
+                ) {
+            checkStart.execute();
+        } ZFLISTENER_END()
+        ZFState::instance()->load(checkStart);
+    }
+    if(this->window()->windowResumed()
+            && ZFState::instance()->ready()
+            ) {
+        checkStart.execute();
     }
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, detach) {
