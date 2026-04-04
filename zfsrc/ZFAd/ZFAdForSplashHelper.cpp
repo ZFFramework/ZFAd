@@ -338,8 +338,7 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
         .observerAdd(ZFUIRootWindow::E_WindowOnResume(), checkStart)
         ;
     if(!ZFState::instance()->ready()) {
-        ZFLISTENER_2(onReady
-                , zfweakT<zfself>, owner
+        ZFLISTENER_1(onReady
                 , ZFListener, checkStart
                 ) {
             checkStart.execute();
