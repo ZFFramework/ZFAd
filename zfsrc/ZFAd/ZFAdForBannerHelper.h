@@ -48,6 +48,10 @@ public:
      * @brief when user click close ad, do not show again for this duration
      */
     ZFPROPERTY_ASSIGN(zftimet, closeDuration, zftimetOneMinute() * 5)
+    /**
+     * @brief whether reserve space if all impl load failed
+     */
+    ZFPROPERTY_ASSIGN(zfbool, reserveSpace, zffalse)
 
 public:
     /**

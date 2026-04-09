@@ -20,6 +20,7 @@ public:
     zfobj<ZFObject> observerOwner;
     zftimet closeTime;
     zfautoT<ZFTaskId> closeTimeoutTaskId;
+    ZFUISize reserveSpace;
 public:
     _ZFP_ZFAdForBannerHelperPrivate(void)
     : cfgList()
@@ -28,6 +29,7 @@ public:
     , observerOwner()
     , closeTime(zftimetInvalid())
     , closeTimeoutTaskId()
+    , reserveSpace(ZFUISizeZero())
     {
     }
 public:
@@ -202,6 +204,10 @@ void ZFAdForBannerHelper::layoutOnMeasure(
         ) {
     if(d->impl) {
         ret = d->impl->layoutMeasure(sizeHint, sizeParam);
+        d->reserveSpace = ret;
+    }
+    else if(this->reserveSpace()) {
+        ret = d->reserveSpace;
     }
     else {
         ret = ZFUISizeZero();
