@@ -33,7 +33,7 @@ public:
             ZFAdForBannerImpl::implForAd(ad)->notifyAdOnClose(ad);
         } ZFLISTENER_END()
         _view->observerAdd(ZFUIView::E_ViewOnEvent(), viewOnEvent);
-        ad->internalBgViewAdd(_view)->sizeFill();
+        ad->internalBgView(_view)->sizeFill();
 
         _dummy = zfobj<ZFUIView>();
         return _dummy->nativeView();
