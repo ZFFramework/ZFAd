@@ -182,7 +182,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("no valid impl"));
                 return;
             }
-            if(ZFTime::currentTime() - owner->d->startTime >= owner->timeout()) {
+            if(owner->timeout() != zftimetInvalid()
+                    && ZFTime::currentTime() - owner->d->startTime >= owner->timeout()
+                    ) {
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("load timeout"));
                 return;
             }
@@ -304,7 +306,7 @@ void ZFAdForSplashHelper::objectOnInit(void) {
         }
         ZFState::instance()->set("ZFAdForSplashHelper_skipCount", zfindexToString(++count));
     } ZFLISTENER_END()
-    ZFState::instance()->load(onLoad);
+    ZFState::instance()->onLoad(onLoad);
 }
 void ZFAdForSplashHelper::objectOnDealloc(void) {
     zfpoolDelete(d);

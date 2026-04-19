@@ -1,21 +1,21 @@
 /**
- * @file ZFAdForSplash.h
- * @brief splash ad
+ * @file ZFAdForReward.h
+ * @brief reward ad
  */
 
-#ifndef _ZFI_ZFAdForSplash_h_
-#define _ZFI_ZFAdForSplash_h_
+#ifndef _ZFI_ZFAdForReward_h_
+#define _ZFI_ZFAdForReward_h_
 
 #include "ZFAdDef.h"
 
 ZF_NAMESPACE_GLOBAL_BEGIN
 
-zfclassFwd _ZFP_ZFAdForSplashPrivate;
+zfclassFwd _ZFP_ZFAdForRewardPrivate;
 /**
- * @brief splash ad
+ * @brief reward ad
  */
-zfclass ZFLIB_ZFAd ZFAdForSplash : zfextend ZFObject {
-    ZFOBJECT_DECLARE(ZFAdForSplash, ZFObject)
+zfclass ZFLIB_ZFAd ZFAdForReward : zfextend ZFObject {
+    ZFOBJECT_DECLARE(ZFAdForReward, ZFObject)
 
 public:
     // ============================================================
@@ -61,7 +61,7 @@ public:
      * param1 is a #v_zfstring optionally holds the error hint
      * \n
      * for the result type:
-     * -  success : ad has displayed and reached timeout (or skip clicked on some impl)
+     * -  success : ad has displayed
      * -  fail : error occurred, #E_AdOnError would also be fired before this event
      * -  cancel : user has clicked skip button (may not work for some impl), or timeout
      */
@@ -121,16 +121,16 @@ protected:
     virtual void objectOnDeallocPrepare(void);
 
 private:
-    _ZFP_ZFAdForSplashPrivate *d;
+    _ZFP_ZFAdForRewardPrivate *d;
 public:
-    void *_ZFP_ZFAdForSplash_impl(void);
-    void _ZFP_ZFAdForSplash_onLoad(void);
-    void _ZFP_ZFAdForSplash_stop(
+    void *_ZFP_ZFAdForReward_impl(void);
+    void _ZFP_ZFAdForReward_onLoad(void);
+    void _ZFP_ZFAdForReward_stop(
             ZF_IN ZFResultType resultType
             , ZF_IN const zfstring &errorHint
             );
 };
 
 ZF_NAMESPACE_GLOBAL_END
-#endif // #ifndef _ZFI_ZFAdForSplash_h_
+#endif // #ifndef _ZFI_ZFAdForReward_h_
 

@@ -45,7 +45,9 @@ public:
             return;
         }
         if(this->closeTime != zftimetInvalid()) {
-            if(this->closeTimeoutTaskId == zfnull) {
+            if(this->closeTimeoutTaskId == zfnull
+                    && owner->closeDuration() != zftimetInvalid()
+                    ) {
                 ZFLISTENER_1(closeTimeout
                         , zfweakT<ZFAdForBannerHelper>, owner
                         ) {

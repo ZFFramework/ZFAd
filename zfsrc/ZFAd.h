@@ -9,6 +9,8 @@
 #include "ZFAd/ZFAdDef.h"
 #include "ZFAd/ZFAdForBanner.h"
 #include "ZFAd/ZFAdForBannerHelper.h"
+#include "ZFAd/ZFAdForReward.h"
+#include "ZFAd/ZFAdForRewardHelper.h"
 #include "ZFAd/ZFAdForSplash.h"
 #include "ZFAd/ZFAdForSplashHelper.h"
 

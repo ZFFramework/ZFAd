@@ -1,10 +1,10 @@
-#include "ZFAd/protocol/ZFProtocolZFAdForSplash.h"
+#include "ZFAd/protocol/ZFProtocolZFAdForReward.h"
 
 ZF_NAMESPACE_GLOBAL_BEGIN
 
-zfclass ZFAdForSplashImpl_DEBUG : zfextend ZFObject, zfimplement ZFAdForSplashImpl {
-    ZFOBJECT_DECLARE(ZFAdForSplashImpl_DEBUG, ZFObject)
-    ZFIMPLEMENT_DECLARE(ZFAdForSplashImpl)
+zfclass ZFAdForRewardImpl_DEBUG : zfextend ZFObject, zfimplement ZFAdForRewardImpl {
+    ZFOBJECT_DECLARE(ZFAdForRewardImpl_DEBUG, ZFObject)
+    ZFIMPLEMENT_DECLARE(ZFAdForRewardImpl)
 
 public:
     zfclass Impl : zfextend ZFObject {
@@ -30,20 +30,20 @@ public:
         void *nativeAd(void) {
             return this;
         }
-        void start(ZF_IN ZFAdForSplash *ad, ZF_IN ZFUIRootWindow *window) {
+        void start(ZF_IN ZFAdForReward *ad, ZF_IN ZFUIRootWindow *window) {
             zfobj<ZFTaskQueue> task;
 
             zfobj<ZFUIWindow> adWindow(window);
-            adWindow->viewId("ZFAdForSplashImpl_DEBUG");
+            adWindow->viewId("ZFAdForRewardImpl_DEBUG");
             adWindow->bgColor(ZFUIColorRandom(0.9f));
             adWindow->windowLevel(ZFUIWindowLevelOverlay());
 
             ZFLISTENER_2(onDisplay
                     , zfautoT<ZFUIWindow>, adWindow
-                    , zfweakT<ZFAdForSplash>, ad
+                    , zfweakT<ZFAdForReward>, ad
                     ) {
                 adWindow->show();
-                ZFAdForSplashImpl::implForAd(ad)->notifyAdOnDisplay(ad);
+                ZFAdForRewardImpl::implForAd(ad)->notifyAdOnDisplay(ad);
                 ZFTask *task = zfargs.sender();
                 task->notifySuccess();
             } ZFLISTENER_END()
@@ -52,10 +52,10 @@ public:
 
             ZFLISTENER_2(onStop
                     , zfautoT<ZFUIWindow>, adWindow
-                    , zfweakT<ZFAdForSplash>, ad
+                    , zfweakT<ZFAdForReward>, ad
                     ) {
                 adWindow->hide();
-                ZFAdForSplashImpl::implForAd(ad)->notifyAdOnStop(ad, v_ZFResultType::e_Success);
+                ZFAdForRewardImpl::implForAd(ad)->notifyAdOnStop(ad, v_ZFResultType::e_Success);
                 ZFTask *task = zfargs.sender();
                 task->notifySuccess();
             } ZFLISTENER_END()
@@ -69,36 +69,36 @@ public:
 public:
     zfoverride
     virtual void *nativeAdCreate(
-            ZF_IN ZFAdForSplash *ad
+            ZF_IN ZFAdForReward *ad
             , ZF_IN const zfstring &appId
             , ZF_IN const zfstring &adId
             ) {
         zfobj<Impl> impl;
-        ad->objectTag("ZFAdForSplashImpl_DEBUG", impl);
+        ad->objectTag("ZFAdForRewardImpl_DEBUG", impl);
         return impl->nativeAd();
     }
     zfoverride
-    virtual void nativeAdDestroy(ZF_IN ZFAdForSplash *ad) {
+    virtual void nativeAdDestroy(ZF_IN ZFAdForReward *ad) {
     }
 
     zfoverride
-    virtual void nativeAdLoad(ZF_IN ZFAdForSplash *ad) {
+    virtual void nativeAdLoad(ZF_IN ZFAdForReward *ad) {
         Impl *impl = (Impl *)ad->nativeAd();
         if(impl->loadTaskId) {
             impl->loadTaskId->stop();
         }
         ZFLISTENER_1(onLoad
-                , zfweakT<ZFAdForSplash>, ad
+                , zfweakT<ZFAdForReward>, ad
                 ) {
             Impl *impl = (Impl *)ad->nativeAd();
             impl->loadTaskId = zfnull;
             impl->loadedTime = ZFTime::currentTime();
-            ZFAdForSplashImpl::implForAd(ad)->notifyAdOnLoad(ad);
+            ZFAdForRewardImpl::implForAd(ad)->notifyAdOnLoad(ad);
         } ZFLISTENER_END()
         impl->loadTaskId = ZFTimerOnce(1500, onLoad);
     }
     zfoverride
-    virtual zfbool nativeAdLoaded(ZF_IN ZFAdForSplash *ad) {
+    virtual zfbool nativeAdLoaded(ZF_IN ZFAdForReward *ad) {
         Impl *impl = (Impl *)ad->nativeAd();
         return impl->loadedTime != zftimetInvalid()
             && ZFTime::currentTime() - impl->loadedTime < 5 * zftimetOneMinute()
@@ -107,14 +107,14 @@ public:
 
     zfoverride
     virtual void nativeAdStart(
-            ZF_IN ZFAdForSplash *ad
+            ZF_IN ZFAdForReward *ad
             , ZF_IN ZFUIRootWindow *window
             ) {
-        zfautoT<Impl> impl = ad->objectTag("ZFAdForSplashImpl_DEBUG");
+        zfautoT<Impl> impl = ad->objectTag("ZFAdForRewardImpl_DEBUG");
         impl->start(ad, window);
     }
 };
-ZFOBJECT_REGISTER(ZFAdForSplashImpl_DEBUG)
+ZFOBJECT_REGISTER(ZFAdForRewardImpl_DEBUG)
 
 ZF_NAMESPACE_GLOBAL_END
 

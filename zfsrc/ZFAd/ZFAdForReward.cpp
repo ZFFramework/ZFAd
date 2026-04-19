@@ -1,18 +1,18 @@
-#include "ZFAdForSplash.h"
-#include "protocol/ZFProtocolZFAdForSplash.h"
+#include "ZFAdForReward.h"
+#include "protocol/ZFProtocolZFAdForReward.h"
 
 ZF_NAMESPACE_GLOBAL_BEGIN
 
-zfclassNotPOD _ZFP_ZFAdForSplashPrivate {
+zfclassNotPOD _ZFP_ZFAdForRewardPrivate {
 public:
-    zfautoT<ZFAdForSplashImpl> impl;
+    zfautoT<ZFAdForRewardImpl> impl;
     void *nativeAd;
     zfauto eventHolder;
     ZFCoreArray<ZFListener> loadCallbacks;
     zfbool loading;
     zfbool started;
 public:
-    _ZFP_ZFAdForSplashPrivate(void)
+    _ZFP_ZFAdForRewardPrivate(void)
     : impl()
     , nativeAd(zfnull)
     , eventHolder()
@@ -32,17 +32,17 @@ public:
 };
 
 // ============================================================
-ZFOBJECT_REGISTER(ZFAdForSplash)
+ZFOBJECT_REGISTER(ZFAdForReward)
 
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnError)
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnDisplay)
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnClick)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnError)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnDisplay)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnClick)
 
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnLoad)
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnStart)
-ZFEVENT_REGISTER(ZFAdForSplash, AdOnStop)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnLoad)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnStart)
+ZFEVENT_REGISTER(ZFAdForReward, AdOnStop)
 
-ZFMETHOD_DEFINE_3(ZFAdForSplash, void, setup
+ZFMETHOD_DEFINE_3(ZFAdForReward, void, setup
         , ZFMP_IN(const zfstring &, implName)
         , ZFMP_IN(const zfstring &, appId)
         , ZFMP_IN(const zfstring &, adId)
@@ -53,20 +53,20 @@ ZFMETHOD_DEFINE_3(ZFAdForSplash, void, setup
         d->impl = zfnull;
     }
 
-    const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForSplashImpl_%s", implName));
+    const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForRewardImpl_%s", implName));
     if(cls == zfnull) {
-        ZFLogTrim("[ZFAdForSplash] no impl: %s", implName);
+        ZFLogTrim("[ZFAdForReward] no impl: %s", implName);
         return;
     }
-    zfautoT<ZFAdForSplashImpl> impl = cls->newInstance();
-    if(zfcast(ZFAdForSplashImpl *, impl) == zfnull) {
-        ZFLogTrim("[ZFAdForSplash] invalid impl: %s", cls);
+    zfautoT<ZFAdForRewardImpl> impl = cls->newInstance();
+    if(zfcast(ZFAdForRewardImpl *, impl) == zfnull) {
+        ZFLogTrim("[ZFAdForReward] invalid impl: %s", cls);
         return;
     }
 
     void *nativeAd = impl->nativeAdCreate(this, appId, adId);
     if(nativeAd == zfnull) {
-        ZFLogTrim("[ZFAdForSplash] unable to setup(%s, %s, %s)", implName, appId, adId);
+        ZFLogTrim("[ZFAdForReward] unable to setup(%s, %s, %s)", implName, appId, adId);
         return;
     }
 
@@ -74,11 +74,11 @@ ZFMETHOD_DEFINE_3(ZFAdForSplash, void, setup
     d->nativeAd = nativeAd;
 }
 
-ZFMETHOD_DEFINE_0(ZFAdForSplash, void *, nativeAd) {
+ZFMETHOD_DEFINE_0(ZFAdForReward, void *, nativeAd) {
     return d->nativeAd;
 }
 
-ZFMETHOD_DEFINE_1(ZFAdForSplash, zfautoT<ZFTaskId>, load
+ZFMETHOD_DEFINE_1(ZFAdForReward, zfautoT<ZFTaskId>, load
         , ZFMP_IN_OPT(const ZFListener &, onLoaded, zfnull)
         ) {
     if(d->nativeAd == zfnull) {
@@ -133,11 +133,11 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, zfautoT<ZFTaskId>, load
 
     return taskId;
 }
-ZFMETHOD_DEFINE_0(ZFAdForSplash, zfbool, loaded) {
+ZFMETHOD_DEFINE_0(ZFAdForReward, zfbool, loaded) {
     return d->impl && d->impl->nativeAdLoaded(this);
 }
 
-ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
+ZFMETHOD_DEFINE_1(ZFAdForReward, void, start
         , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
     if(d->started) {
@@ -160,7 +160,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
             , zfweakT<ZFUIRootWindow>, window
             ) {
         if(!owner->loaded()) {
-            owner->_ZFP_ZFAdForSplash_stop(v_ZFResultType::e_Fail, "load failed");
+            owner->_ZFP_ZFAdForReward_stop(v_ZFResultType::e_Fail, "load failed");
             return;
         }
 
@@ -185,11 +185,11 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
     } ZFLISTENER_END()
     this->load(onLoad);
 }
-ZFMETHOD_DEFINE_0(ZFAdForSplash, zfbool, started) {
+ZFMETHOD_DEFINE_0(ZFAdForReward, zfbool, started) {
     return d->started;
 }
 
-ZFOBJECT_ON_INIT_DEFINE_3(ZFAdForSplash
+ZFOBJECT_ON_INIT_DEFINE_3(ZFAdForReward
         , ZFMP_IN(const zfstring &, implName)
         , ZFMP_IN(const zfstring &, appId)
         , ZFMP_IN(const zfstring &, adId)
@@ -197,15 +197,15 @@ ZFOBJECT_ON_INIT_DEFINE_3(ZFAdForSplash
     this->setup(implName, appId, adId);
 }
 
-void ZFAdForSplash::objectOnInit(void) {
+void ZFAdForReward::objectOnInit(void) {
     zfsuper::objectOnInit();
-    d = zfpoolNew(_ZFP_ZFAdForSplashPrivate);
+    d = zfpoolNew(_ZFP_ZFAdForRewardPrivate);
 }
-void ZFAdForSplash::objectOnDealloc(void) {
+void ZFAdForReward::objectOnDealloc(void) {
     zfpoolDelete(d);
     zfsuper::objectOnDealloc();
 }
-void ZFAdForSplash::objectOnDeallocPrepare(void) {
+void ZFAdForReward::objectOnDeallocPrepare(void) {
     if(d->nativeAd) {
         d->impl->nativeAdDestroy(this);
         d->nativeAd = zfnull;
@@ -214,17 +214,17 @@ void ZFAdForSplash::objectOnDeallocPrepare(void) {
     zfsuper::objectOnDeallocPrepare();
 }
 
-void *ZFAdForSplash::_ZFP_ZFAdForSplash_impl(void) {
-    return (void *)d->impl.to<ZFAdForSplashImpl *>();
+void *ZFAdForReward::_ZFP_ZFAdForReward_impl(void) {
+    return (void *)d->impl.to<ZFAdForRewardImpl *>();
 }
-void ZFAdForSplash::_ZFP_ZFAdForSplash_onLoad(void) {
+void ZFAdForReward::_ZFP_ZFAdForReward_onLoad(void) {
     if(d->loading) {
         d->loading = zffalse;
         this->observerNotify(zfself::E_AdOnLoad());
         zfobjRelease(this);
     }
 }
-void ZFAdForSplash::_ZFP_ZFAdForSplash_stop(
+void ZFAdForReward::_ZFP_ZFAdForReward_stop(
         ZF_IN ZFResultType resultType
         , ZF_IN const zfstring &errorHint
         ) {

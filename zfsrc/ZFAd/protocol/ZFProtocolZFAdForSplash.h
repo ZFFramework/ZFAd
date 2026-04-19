@@ -29,6 +29,11 @@ public:
     /** @brief destroy native ad */
     virtual void nativeAdDestroy(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
 
+    /** @brief load native ad */
+    virtual void nativeAdLoad(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
+    /** @brief chech whether ad loaded and not expired */
+    virtual zfbool nativeAdLoaded(ZF_IN ZFAdForSplash *ad) zfpurevirtual;
+
     /** @brief start native ad */
     virtual void nativeAdStart(
             ZF_IN ZFAdForSplash *ad
@@ -60,6 +65,12 @@ public:
         ad->observerNotify(ZFAdForSplash::E_AdOnClick());
     }
 
+    /** @brief see #ZFAdForSplash::E_AdOnLoad */
+    zffinal void notifyAdOnLoad(
+            ZF_IN ZFAdForSplash *ad
+            ) {
+        ad->_ZFP_ZFAdForSplash_onLoad();
+    }
     /** @brief see #ZFAdForSplash::E_AdOnStop */
     zffinal void notifyAdOnStop(
             ZF_IN ZFAdForSplash *ad
