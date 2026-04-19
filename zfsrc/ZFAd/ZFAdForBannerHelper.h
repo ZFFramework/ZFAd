@@ -44,6 +44,24 @@ zfclass ZFLIB_ZFAd ZFAdForBannerHelper : zfextend ZFUIView {
     ZFOBJECT_DECLARE(ZFAdForBannerHelper, ZFUIView)
 
 public:
+    // ============================================================
+    // events
+    /**
+     * @brief see #ZFObject::observerNotify
+     *
+     * called to check whether ad should be started,
+     * param0 is a #v_zfboolHolder holding the result\n
+     * \n
+     * before notifying the event, these rules already applied:
+     * -  #closeDuration
+     *
+     * \n
+     * rules recommended to consider:
+     * -  #ZFAdForSplashHelper::skipped
+     */
+    ZFEVENT(AdOnCheck)
+
+public:
     /**
      * @brief when user click close ad, do not show again for this duration
      */

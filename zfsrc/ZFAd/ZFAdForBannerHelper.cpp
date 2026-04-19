@@ -61,6 +61,13 @@ public:
             }
             return;
         }
+        {
+            zfobj<v_zfboolHolder> check(zftrue);
+            owner->observerNotify(ZFAdForBannerHelper::E_AdOnCheck(), check);
+            if(!check->zfv) {
+                return;
+            }
+        }
         _ZFP_ZFAdForBannerHelperPrivate::Cfg const &cfg = this->cfgList[(this->nextIndex)++];
         zfbool valid = zffalse;
         do {
@@ -147,6 +154,8 @@ public:
 
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForBannerHelper)
+
+ZFEVENT_REGISTER(ZFAdForBannerHelper, AdOnCheck)
 
 ZFMETHOD_DEFINE_6(ZFAdForBannerHelper, ZFAdForBannerHelper *, cfg
         , ZFMP_IN(const zfstring &, implName)

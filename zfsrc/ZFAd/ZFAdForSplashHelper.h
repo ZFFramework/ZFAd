@@ -40,6 +40,21 @@ zfclass ZFLIB_ZFAd ZFAdForSplashHelper : zfextend ZFObject {
     ZFOBJECT_DECLARE(ZFAdForSplashHelper, ZFObject)
 
 public:
+    // ============================================================
+    // events
+    /**
+     * @brief see #ZFObject::observerNotify
+     *
+     * called to check whether ad should be started,
+     * param0 is a #v_zfboolHolder holding the result\n
+     * \n
+     * before notifying the event, these rules already applied:
+     * -  #skipped
+     * -  #silentDuration
+     */
+    ZFEVENT(AdOnCheck)
+
+public:
     /**
      * @brief access instance
      */

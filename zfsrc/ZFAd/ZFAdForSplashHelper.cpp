@@ -114,6 +114,8 @@ private:
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForSplashHelper)
 
+ZFEVENT_REGISTER(ZFAdForSplashHelper, AdOnCheck)
+
 ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFAdForSplashHelper>, instance
         , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
@@ -330,6 +332,13 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
                     || owner->d->silentDurationBegin == zftimetInvalid()
                     || curTime - owner->d->silentDurationBegin > owner->silentDuration()
                     )) {
+            {
+                zfobj<v_zfboolHolder> check(zftrue);
+                owner->observerNotify(ZFAdForSplashHelper::E_AdOnCheck(), check);
+                if(!check->zfv) {
+                    return;
+                }
+            }
             owner->d->silentDurationBegin = curTime;
             owner->start();
         }
