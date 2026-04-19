@@ -7,6 +7,7 @@ zfclassNotPOD _ZFP_ZFAdForSplashPrivate {
 public:
     zfautoT<ZFAdForSplashImpl> impl;
     void *nativeAd;
+    zfweakT<ZFUIRootWindow> window;
     zfauto eventHolder;
     ZFCoreArray<ZFListener> loadCallbacks;
     zfbool loading;
@@ -15,6 +16,7 @@ public:
     _ZFP_ZFAdForSplashPrivate(void)
     : impl()
     , nativeAd(zfnull)
+    , window()
     , eventHolder()
     , loadCallbacks()
     , loading(zffalse)
@@ -78,6 +80,21 @@ ZFMETHOD_DEFINE_0(ZFAdForSplash, void *, nativeAd) {
     return d->nativeAd;
 }
 
+ZFMETHOD_DEFINE_0(ZFAdForSplash, ZFUIRootWindow *, window) {
+    ZFUIRootWindow *ret = d->window;
+    if(ret != zfnull) {
+        return ret;
+    }
+    else {
+        return ZFUIRootWindow::mainWindow();
+    }
+}
+ZFMETHOD_DEFINE_1(ZFAdForSplash, void, window
+        , ZFMP_IN(ZFUIRootWindow *, window)
+        ) {
+    d->window = window;
+}
+
 ZFMETHOD_DEFINE_1(ZFAdForSplash, zfautoT<ZFTaskId>, load
         , ZFMP_IN_OPT(const ZFListener &, onLoaded, zfnull)
         ) {
@@ -109,7 +126,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, zfautoT<ZFTaskId>, load
             , zfweakT<ZFTaskIdBasic>, taskId
             , ZFListener, onLoaded
             ) {
-        taskId->stopImpl(zfnull);
+        if(taskId) {
+            taskId->stopImpl(zfnull);
+        }
         onLoaded.execute(zfargs);
     } ZFLISTENER_END()
 
@@ -137,9 +156,7 @@ ZFMETHOD_DEFINE_0(ZFAdForSplash, zfbool, loaded) {
     return d->impl && d->impl->nativeAdLoaded(this);
 }
 
-ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
-        , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
-        ) {
+ZFMETHOD_DEFINE_0(ZFAdForSplash, void, start) {
     if(d->started) {
         return;
     }
@@ -149,23 +166,20 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
     }
     d->started = zftrue;
     zfobjRetain(this);
-    if(window == zfnull) {
-        window = ZFUIRootWindow::mainWindow();
-    }
-    this->observerNotify(zfself::E_AdOnStart(), window);
+    this->observerNotify(zfself::E_AdOnStart());
 
     zfweakT<zfself> owner = this;
-    ZFLISTENER_2(onLoad
+    ZFLISTENER_1(onLoad
             , zfweakT<zfself>, owner
-            , zfweakT<ZFUIRootWindow>, window
             ) {
         if(!owner->loaded()) {
             owner->_ZFP_ZFAdForSplash_stop(v_ZFResultType::e_Fail, "load failed");
             return;
         }
 
+        ZFUIRootWindow *window = owner->window();
         if(window->windowCreated()) {
-            owner->d->impl->nativeAdStart(owner, window);
+            owner->d->impl->nativeAdStart(owner);
         }
         else {
             owner->d->eventHolder = zfobj<ZFObject>();
@@ -176,7 +190,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, void, start
                     ZFObserverGroupRemove(owner->d->eventHolder);
                     owner->d->eventHolder = zfnull;
                 }
-                owner->d->impl->nativeAdStart(owner, zfargs.sender());
+                owner->d->impl->nativeAdStart(owner);
             } ZFLISTENER_END()
             ZFObserverGroup(owner->d->eventHolder, window)
                 .observerAdd(ZFUIRootWindow::E_WindowOnCreate(), windowOnCreate, ZFLevelZFFrameworkPostNormal)
@@ -220,6 +234,15 @@ void *ZFAdForSplash::_ZFP_ZFAdForSplash_impl(void) {
 void ZFAdForSplash::_ZFP_ZFAdForSplash_onLoad(void) {
     if(d->loading) {
         d->loading = zffalse;
+        if(!d->loadCallbacks.isEmpty()) {
+            ZFCoreArray<ZFListener> tmp;
+            tmp.swap(d->loadCallbacks);
+            ZFArgs zfargs;
+            zfargs.sender(this);
+            for(zfindex i = 0; i < tmp.count(); ++i) {
+                tmp[i].execute(zfargs);
+            }
+        }
         this->observerNotify(zfself::E_AdOnLoad());
         zfobjRelease(this);
     }

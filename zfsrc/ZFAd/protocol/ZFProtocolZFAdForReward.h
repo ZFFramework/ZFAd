@@ -35,10 +35,7 @@ public:
     virtual zfbool nativeAdLoaded(ZF_IN ZFAdForReward *ad) zfpurevirtual;
 
     /** @brief start native ad */
-    virtual void nativeAdStart(
-            ZF_IN ZFAdForReward *ad
-            , ZF_IN ZFUIRootWindow *window
-            ) zfpurevirtual;
+    virtual void nativeAdStart(ZF_IN ZFAdForReward *ad) zfpurevirtual;
 
 public:
     /** @brief util for impl to access impl from owner ad */

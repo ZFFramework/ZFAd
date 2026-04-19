@@ -49,8 +49,7 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when #start,
-     * param0 is the #ZFUIRootWindow
+     * called when #start
      */
     ZFEVENT(AdOnStart)
     /**
@@ -81,6 +80,13 @@ public:
     /** @brief access the native ad */
     ZFMETHOD_DECLARE_0(void *, nativeAd)
 
+    /** @brief owner window, null to use #ZFUIRootWindow::mainWindow */
+    ZFMETHOD_DECLARE_0(ZFUIRootWindow *, window)
+    /** @brief see #window */
+    ZFMETHOD_DECLARE_1(void, window
+            , ZFMP_IN(ZFUIRootWindow *, window)
+            )
+
 public:
     /**
      * @brief load the ad
@@ -99,9 +105,7 @@ public:
     /**
      * @brief start the ad, auto retain until stop
      */
-    ZFMETHOD_DECLARE_1(void, start
-            , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
-            )
+    ZFMETHOD_DECLARE_0(void, start)
     /** @brief whether the ad started */
     ZFMETHOD_DECLARE_0(zfbool, started)
 

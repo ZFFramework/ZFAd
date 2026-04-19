@@ -30,10 +30,10 @@ public:
         void *nativeAd(void) {
             return this;
         }
-        void start(ZF_IN ZFAdForReward *ad, ZF_IN ZFUIRootWindow *window) {
+        void start(ZF_IN ZFAdForReward *ad) {
             zfobj<ZFTaskQueue> task;
 
-            zfobj<ZFUIWindow> adWindow(window);
+            zfobj<ZFUIWindow> adWindow(ad->window());
             adWindow->viewId("ZFAdForRewardImpl_DEBUG");
             adWindow->bgColor(ZFUIColorRandom(0.9f));
             adWindow->windowLevel(ZFUIWindowLevelOverlay());
@@ -106,12 +106,9 @@ public:
     }
 
     zfoverride
-    virtual void nativeAdStart(
-            ZF_IN ZFAdForReward *ad
-            , ZF_IN ZFUIRootWindow *window
-            ) {
+    virtual void nativeAdStart(ZF_IN ZFAdForReward *ad) {
         zfautoT<Impl> impl = ad->objectTag("ZFAdForRewardImpl_DEBUG");
-        impl->start(ad, window);
+        impl->start(ad);
     }
 };
 ZFOBJECT_REGISTER(ZFAdForRewardImpl_DEBUG)
