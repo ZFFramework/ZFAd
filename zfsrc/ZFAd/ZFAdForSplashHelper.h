@@ -87,7 +87,7 @@ public:
      * note: you must have #ZFState::ready before #ZFAdForSplashHelper::attach
      * to make this logic working
      */
-    ZFPROPERTY_ASSIGN(zfindex, skipCount, 1)
+    ZFPROPERTY_ASSIGN(zfindex, skipCount, 2)
     /**
      * @brief timeout if no impl can display success
      */
