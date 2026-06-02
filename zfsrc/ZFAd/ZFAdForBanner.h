@@ -22,13 +22,6 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when any error occurred,
-     * param0 is a #v_zfstring holds error hint
-     */
-    ZFEVENT(AdOnError)
-    /**
-     * @brief see #ZFObject::observerNotify
-     *
      * called when ad displayed successfully
      */
     ZFEVENT(AdOnDisplay)
@@ -39,6 +32,13 @@ public:
      */
     ZFEVENT(AdOnClick)
 
+    /**
+     * @brief see #ZFObject::observerNotify
+     *
+     * called when any error occurred,
+     * param0 is a #v_zfstring holds error hint
+     */
+    ZFEVENT(AdOnError)
     /**
      * @brief see #ZFObject::observerNotify
      *

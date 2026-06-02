@@ -123,6 +123,23 @@ public:
 
 public:
     /**
+     * @brief load the ad
+     *
+     * param0 is a #v_ZFResultType indicates resultType,
+     * param1 is a #v_zfstring optionally holds the errorHint
+     */
+    ZFMETHOD_DECLARE_1(zfautoT<ZFTaskId>, load
+            , ZFMP_IN_OPT(const ZFListener &, onLoadStop, zfnull)
+            )
+    /**
+     * @brief whether ad loaded
+     *
+     * can be chaned to false if previously loaded ad expired,
+     * always use #load to check is recommended
+     */
+    ZFMETHOD_DECLARE_0(zfbool, loaded)
+
+    /**
      * @brief start the ad, auto retain until stop
      *
      * onStop's param0 is a #ZFResultType indicates result type,

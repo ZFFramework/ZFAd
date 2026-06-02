@@ -107,14 +107,6 @@ public:
 
         zfweakT<ZFAdForBannerHelper> weakOwner = owner;
 
-        ZFLISTENER_1(AdOnError
-                , zfweakT<ZFAdForBannerHelper>, weakOwner
-                ) {
-            if(!weakOwner) {return;}
-            weakOwner->d->implStop();
-            weakOwner->d->implUpdate(weakOwner);
-        } ZFLISTENER_END()
-
         ZFLISTENER_1(AdOnDisplay
                 , zfweakT<ZFAdForBannerHelper>, weakOwner
                 ) {
@@ -127,6 +119,14 @@ public:
                 ) {
             if(!weakOwner) {return;}
             weakOwner->observerNotify(ZFAdForBanner::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnError
+                , zfweakT<ZFAdForBannerHelper>, weakOwner
+                ) {
+            if(!weakOwner) {return;}
+            weakOwner->d->implStop();
+            weakOwner->d->implUpdate(weakOwner);
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClose
@@ -144,9 +144,9 @@ public:
         } ZFLISTENER_END()
 
         ZFObserverGroup(this->observerOwner, impl)
-            .observerAdd(ZFAdForBanner::E_AdOnError(), AdOnError)
             .observerAdd(ZFAdForBanner::E_AdOnDisplay(), AdOnDisplay)
             .observerAdd(ZFAdForBanner::E_AdOnClick(), AdOnClick)
+            .observerAdd(ZFAdForBanner::E_AdOnError(), AdOnError)
             .observerAdd(ZFAdForBanner::E_AdOnClose(), AdOnClose)
             ;
 

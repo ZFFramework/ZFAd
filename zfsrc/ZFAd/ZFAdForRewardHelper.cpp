@@ -14,36 +14,29 @@ public:
         zfstring localeLangId;
     };
 public:
-    ZFAdForRewardHelper *owner;
     ZFCoreArray<Cfg> cfgList;
     zfautoT<ZFAdForReward> impl; // current impl, may be null
     zfindex index; // next index to try, may exceed cfgList
+    ZFCoreArray<ZFListener> onLoadStopList;
+    zftimet loadStartTime; // zftimetInvalid when not loading
 
-    zfobj<ZFObject> observerOwner;
     zfweakT<ZFUIRootWindow> window;
-    zftimet startTime; // 0 when not started
-    zfbool implShowing;
-    zfauto holder; // retained during running
+    zfobj<ZFObject> observerOwner;
+    zfbool started;
+    zfbool showing;
 
 public:
     _ZFP_ZFAdForRewardHelperPrivate(void)
     : cfgList()
     , impl()
     , index(0)
-    , observerOwner()
+    , onLoadStopList()
+    , loadStartTime(zftimetInvalid())
     , window()
-    , startTime()
-    , implShowing(zffalse)
-    , holder()
+    , observerOwner()
+    , started(zffalse)
+    , showing(zffalse)
     {
-    }
-public:
-    void implStop(void) {
-        if(this->impl) {
-            ZFObserverGroupRemove(this->observerOwner);
-            this->impl = zfnull;
-        }
-        this->implShowing = zffalse;
     }
 };
 
@@ -97,27 +90,49 @@ ZFMETHOD_DEFINE_0(ZFAdForRewardHelper, zfanyT<ZFUIRootWindow>, window) {
     return d->window ? d->window.get() : ZFUIRootWindow::mainWindow();
 }
 
-ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
-        , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
+ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
+        , ZFMP_IN_OPT(const ZFListener &, onLoadStop, zfnull)
         ) {
-    if(this->started()) {
-        return;
+    if(d->loadStartTime == zftimetInvalid() && this->loaded()) {
+        if(onLoadStop) {
+            onLoadStop.execute(ZFArgs()
+                    .sender(this)
+                    .param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Success))
+                    .param1(zfobj<v_zfstring>())
+                    );
+        }
+        return zfnull;
     }
-
-    d->holder = this;
-
-    d->startTime = ZFTime::currentTime();
-    this->observerNotify(ZFAdForReward::E_AdOnStart(), this->window());
+    zfweakT<zfself> owner = this;
+    zfobj<ZFTaskIdBasic> taskId;
+    ZFLISTENER_2(stopImpl
+            , zfweakT<zfself>, owner
+            , ZFListener, onLoadStop
+            ) {
+        if(onLoadStop) {
+            owner->d->onLoadStopList.removeElement(onLoadStop);
+        }
+    } ZFLISTENER_END()
+    taskId->stopImpl(stopImpl);
+    if(onLoadStop) {
+        d->onLoadStopList.add(onLoadStop);
+    }
+    if(d->loadStartTime != zftimetInvalid()) {
+        return taskId;
+    }
+    d->loadStartTime = ZFTime::currentTime();
+    zfobjRetain(this);
+    d->index = 0;
 
     zfclassNotPOD _Impl {
     public:
         static void tryNext(ZF_IN ZFAdForRewardHelper *owner) {
-            if(owner->d->impl || owner->d->index >= owner->d->cfgList.count()) {
+            if(owner->d->index >= owner->d->cfgList.count()) {
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("no valid impl"));
                 return;
             }
             if(owner->timeout() != zftimetInvalid()
-                    && ZFTime::currentTime() - owner->d->startTime >= owner->timeout()
+                    && ZFTime::currentTime() - owner->d->loadStartTime >= owner->timeout()
                     ) {
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("load timeout"));
                 return;
@@ -156,50 +171,24 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
 
             zfobj<ZFAdForReward> impl;
             owner->d->impl = impl;
-
             zfweakT<ZFAdForRewardHelper> weakOwner = owner;
-
-            ZFLISTENER_1(AdOnError
+            ZFLISTENER_1(implOnLoadStop
                     , zfweakT<ZFAdForRewardHelper>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
-                weakOwner->d->implShowing = zffalse;
-                weakOwner->d->implStop();
-                tryNext(weakOwner);
+                v_ZFResultType *resultType = zfargs.param0();
+                switch(resultType->zfv()) {
+                    case v_ZFResultType::e_Fail:
+                        tryNext(weakOwner);
+                        break;
+                    case v_ZFResultType::e_Success:
+                    default:
+                        _stop(weakOwner, zfargs.param0(), zfargs.param1());
+                        break;
+                }
             } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnDisplay
-                    , zfweakT<ZFAdForRewardHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->d->implShowing = zftrue;
-                weakOwner->observerNotify(ZFAdForReward::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnClick
-                    , zfweakT<ZFAdForRewardHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->observerNotify(ZFAdForReward::E_AdOnClick(), zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFLISTENER_1(AdOnStop
-                    , zfweakT<ZFAdForRewardHelper>, weakOwner
-                    ) {
-                if(!weakOwner) {return;}
-                weakOwner->d->implShowing = zffalse;
-                _stop(weakOwner, zfargs.param0(), zfargs.param1());
-            } ZFLISTENER_END()
-
-            ZFObserverGroup(owner->d->observerOwner, impl)
-                .observerAdd(ZFAdForReward::E_AdOnError(), AdOnError)
-                .observerAdd(ZFAdForReward::E_AdOnDisplay(), AdOnDisplay)
-                .observerAdd(ZFAdForReward::E_AdOnClick(), AdOnClick)
-                .observerAdd(ZFAdForReward::E_AdOnStop(), AdOnStop)
-                ;
-
             impl->setup(cfg.implName, cfg.appId, cfg.adId);
-            impl->start();
+            impl->load(implOnLoadStop);
         }
     private:
         static void _stop(
@@ -208,25 +197,98 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
                 , ZF_IN v_zfstring *errorHint
                 ) {
             owner->d->index = 0;
-            owner->d->startTime = 0;
-            owner->d->implStop();
-            if(resultType->zfv() == v_ZFResultType::e_Fail) {
-                owner->observerNotify(ZFAdForReward::E_AdOnError(), errorHint);
+            owner->d->loadStartTime = zftimetInvalid();
+            owner->observerNotify(ZFAdForReward::E_AdOnLoadStop(), resultType, errorHint);
+
+            ZFCoreArray<ZFListener> onLoadStopList;
+            onLoadStopList.swap(owner->d->onLoadStopList);
+            ZFArgs zfargs;
+            zfargs
+                .sender(owner)
+                .param0(resultType)
+                .param1(errorHint)
+                ;
+            for(zfindex i = 0; i < onLoadStopList.count(); ++i) {
+                onLoadStopList[i].execute(zfargs);
             }
-            owner->observerNotify(ZFAdForReward::E_AdOnStop(), resultType, errorHint);
-            owner->d->holder = zfnull;
+            zfobjRelease(owner);
         }
     };
     _Impl::tryNext(this);
+
+    return taskId->stopImpl() ? taskId : zfnull;
+}
+ZFMETHOD_DEFINE_0(ZFAdForRewardHelper, zfbool, loaded) {
+    return d->impl && d->impl->loaded();
+}
+
+ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
+        , ZFMP_IN_OPT(const ZFListener &, onStop, zfnull)
+        ) {
+    if(d->started) {
+        return;
+    }
+    d->started = zftrue;
+    this->observerNotify(ZFAdForReward::E_AdOnStart(), this->window());
+
+    zfself *owner = this;
+    ZFLISTENER_2(onLoadStop
+            , zfweakT<zfself>, owner
+            , ZFListener, onStop
+            ) {
+        v_ZFResultType *resultType = zfargs.param0();
+        if(owner == zfnull || owner->d->impl == zfnull
+                || resultType == zfnull
+                || resultType->zfv() != v_ZFResultType::e_Success
+                ) {
+            if(resultType == zfnull) {
+                zfargs.param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail));
+            }
+            onStop.execute(zfargs);
+            return;
+        }
+
+        ZFLISTENER_1(AdOnDisplay
+                , zfweakT<ZFAdForRewardHelper>, owner
+                ) {
+            if(!owner) {return;}
+            owner->d->showing = zftrue;
+            owner->observerNotify(ZFAdForReward::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnClick
+                , zfweakT<ZFAdForRewardHelper>, owner
+                ) {
+            if(!owner) {return;}
+            owner->observerNotify(ZFAdForReward::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFLISTENER_1(AdOnStop
+                , zfweakT<ZFAdForRewardHelper>, owner
+                ) {
+            if(!owner) {return;}
+            owner->d->started = zffalse;
+            owner->d->showing = zffalse;
+            ZFObserverGroupRemove(owner->d->observerOwner);
+            owner->observerNotify(ZFAdForReward::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+        } ZFLISTENER_END()
+
+        ZFObserverGroup(owner->d->observerOwner, owner->d->impl)
+            .observerAdd(ZFAdForReward::E_AdOnDisplay(), AdOnDisplay)
+            .observerAdd(ZFAdForReward::E_AdOnClick(), AdOnClick)
+            .observerAdd(ZFAdForReward::E_AdOnStop(), AdOnStop)
+            ;
+        owner->d->impl->start();
+    } ZFLISTENER_END()
+    this->load(onLoadStop);
 }
 ZFMETHOD_DEFINE_0(ZFAdForRewardHelper, zfbool, started) {
-    return d->startTime != 0;
+    return d->started;
 }
 
 void ZFAdForRewardHelper::objectOnInit(void) {
     zfsuper::objectOnInit();
     d = zfpoolNew(_ZFP_ZFAdForRewardHelperPrivate);
-    d->owner = this;
 }
 void ZFAdForRewardHelper::objectOnDealloc(void) {
     zfpoolDelete(d);

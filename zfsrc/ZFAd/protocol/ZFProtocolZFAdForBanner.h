@@ -49,13 +49,6 @@ public:
     // ============================================================
     // callbacks that implementations must notify
 public:
-    /** @brief see #ZFAdForBanner::E_AdOnError */
-    zffinal void notifyAdOnError(
-            ZF_IN ZFAdForBanner *ad
-            , ZF_IN const zfstring &errorHint
-            ) {
-        ad->observerNotify(ZFAdForBanner::E_AdOnError(), zfobj<v_zfstring>(errorHint));
-    }
     /** @brief see #ZFAdForBanner::E_AdOnDisplay */
     zffinal void notifyAdOnDisplay(ZF_IN ZFAdForBanner *ad) {
         ad->observerNotify(ZFAdForBanner::E_AdOnDisplay());
@@ -65,6 +58,13 @@ public:
         ad->observerNotify(ZFAdForBanner::E_AdOnClick());
     }
 
+    /** @brief see #ZFAdForBanner::E_AdOnError */
+    zffinal void notifyAdOnError(
+            ZF_IN ZFAdForBanner *ad
+            , ZF_IN const zfstring &errorHint
+            ) {
+        ad->observerNotify(ZFAdForBanner::E_AdOnError(), zfobj<v_zfstring>(errorHint));
+    }
     /** @brief see #ZFAdForBanner::E_AdOnClose */
     zffinal void notifyAdOnClose(ZF_IN ZFAdForBanner *ad) {
         ad->observerNotify(ZFAdForBanner::E_AdOnClose());

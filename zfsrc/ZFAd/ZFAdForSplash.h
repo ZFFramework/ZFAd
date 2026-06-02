@@ -23,13 +23,6 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when any error occurred,
-     * param0 is a #v_zfstring holds error hint
-     */
-    ZFEVENT(AdOnError)
-    /**
-     * @brief see #ZFObject::observerNotify
-     *
      * called when ad displayed successfully
      */
     ZFEVENT(AdOnDisplay)
@@ -43,9 +36,11 @@ public:
     /**
      * @brief see #ZFObject::observerNotify
      *
-     * called when loaded
+     * called when loaded,
+     * param0 is a #v_ZFResultType indicates resultType,
+     * param1 is a #v_zfstring optionally holds the errorHint
      */
-    ZFEVENT(AdOnLoad)
+    ZFEVENT(AdOnLoadStop)
     /**
      * @brief see #ZFObject::observerNotify
      *
@@ -61,7 +56,7 @@ public:
      * \n
      * for the result type:
      * -  success : ad has displayed and reached timeout (or skip clicked on some impl)
-     * -  fail : error occurred, #E_AdOnError would also be fired before this event
+     * -  fail : error occurred
      * -  cancel : user has clicked skip button (may not work for some impl), or timeout
      */
     ZFEVENT(AdOnStop)
@@ -75,6 +70,10 @@ public:
             , ZFMP_IN(const zfstring &, appId)
             , ZFMP_IN(const zfstring &, adId)
             )
+    /**
+     * @brief load timeout
+     */
+    ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
 
 public:
     /** @brief access the native ad */
@@ -90,9 +89,12 @@ public:
 public:
     /**
      * @brief load the ad
+     *
+     * param0 is a #v_ZFResultType indicates resultType,
+     * param1 is a #v_zfstring optionally holds the errorHint
      */
     ZFMETHOD_DECLARE_1(zfautoT<ZFTaskId>, load
-            , ZFMP_IN_OPT(const ZFListener &, onLoaded, zfnull)
+            , ZFMP_IN_OPT(const ZFListener &, onLoadStop, zfnull)
             )
     /**
      * @brief whether ad loaded
@@ -128,7 +130,10 @@ private:
     _ZFP_ZFAdForSplashPrivate *d;
 public:
     void *_ZFP_ZFAdForSplash_impl(void);
-    void _ZFP_ZFAdForSplash_onLoad(void);
+    void _ZFP_ZFAdForSplash_onLoadStop(
+            ZF_IN ZFResultType resultType
+            , ZF_IN const zfstring &errorHint
+            );
     void _ZFP_ZFAdForSplash_stop(
             ZF_IN ZFResultType resultType
             , ZF_IN const zfstring &errorHint

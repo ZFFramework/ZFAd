@@ -6,10 +6,10 @@ ZF_NAMESPACE_GLOBAL_BEGIN
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForBanner)
 
-ZFEVENT_REGISTER(ZFAdForBanner, AdOnError)
 ZFEVENT_REGISTER(ZFAdForBanner, AdOnDisplay)
 ZFEVENT_REGISTER(ZFAdForBanner, AdOnClick)
 
+ZFEVENT_REGISTER(ZFAdForBanner, AdOnError)
 ZFEVENT_REGISTER(ZFAdForBanner, AdOnClose)
 
 ZFMETHOD_DEFINE_3(ZFAdForBanner, void, setup
