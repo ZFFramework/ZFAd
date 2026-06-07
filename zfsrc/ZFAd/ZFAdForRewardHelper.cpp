@@ -121,7 +121,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
         return taskId;
     }
     d->loadStartTime = ZFTime::currentTime();
-    zfobjRetain(this);
+    zfobjRetain(this); // retain by load
     d->index = 0;
 
     zfclassNotPOD _Impl {
@@ -211,7 +211,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
             for(zfindex i = 0; i < onLoadStopList.count(); ++i) {
                 onLoadStopList[i].execute(zfargs);
             }
-            zfobjRelease(owner);
+            zfobjRelease(owner); // retain by load
         }
     };
     _Impl::tryNext(this);
@@ -229,6 +229,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
         return;
     }
     d->started = zftrue;
+    zfobjRetain(this); // retain by start
     this->observerNotify(ZFAdForReward::E_AdOnStart(), this->window());
 
     zfself *owner = this;
@@ -245,6 +246,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
                 zfargs.param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail));
             }
             onStop.execute(zfargs);
+            zfobjRelease(owner); // retain by start
             return;
         }
 
@@ -263,14 +265,21 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
             owner->observerNotify(ZFAdForReward::E_AdOnClick(), zfargs.param0(), zfargs.param1());
         } ZFLISTENER_END()
 
-        ZFLISTENER_1(AdOnStop
+        ZFLISTENER_2(AdOnStop
                 , zfweakT<ZFAdForRewardHelper>, owner
+                , ZFListener, onStop
                 ) {
             if(!owner) {return;}
             owner->d->started = zffalse;
             owner->d->showing = zffalse;
             ZFObserverGroupRemove(owner->d->observerOwner);
             owner->observerNotify(ZFAdForReward::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+            onStop.execute(ZFArgs()
+                    .sender(owner)
+                    .param0(zfargs.param0())
+                    .param1(zfargs.param1())
+                    );
+            zfobjRelease(owner); // retain by start
         } ZFLISTENER_END()
 
         ZFObserverGroup(owner->d->observerOwner, owner->d->impl)

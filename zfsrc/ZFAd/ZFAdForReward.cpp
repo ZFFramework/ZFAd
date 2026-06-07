@@ -121,7 +121,7 @@ ZFMETHOD_DEFINE_1(ZFAdForReward, zfautoT<ZFTaskId>, load
     if(!onLoadStop) {
         if(!d->loading) {
             d->loading = zftrue;
-            zfobjRetain(this);
+            zfobjRetain(this); // retain by load
             d->impl->nativeAdLoad(this);
         }
         return zfnull;
@@ -154,7 +154,7 @@ ZFMETHOD_DEFINE_1(ZFAdForReward, zfautoT<ZFTaskId>, load
 
     if(!d->loading) {
         d->loading = zftrue;
-        zfobjRetain(this);
+        zfobjRetain(this); // retain by load
         d->impl->nativeAdLoad(this);
     }
 
@@ -169,7 +169,7 @@ ZFMETHOD_DEFINE_0(ZFAdForReward, void, start) {
         return;
     }
     d->started = zftrue;
-    zfobjRetain(this);
+    zfobjRetain(this); // retain by start
     this->observerNotify(zfself::E_AdOnStart());
     if(d->nativeAd == zfnull) {
         zfobj<v_zfstring> errorHint("ad has not been setup");
@@ -262,7 +262,7 @@ void ZFAdForReward::_ZFP_ZFAdForReward_onLoadStop(
             }
         }
         this->observerNotify(zfself::E_AdOnLoadStop(), resultTypeTmp, errorHintTmp);
-        zfobjRelease(this);
+        zfobjRelease(this); // retain by load
     }
 }
 void ZFAdForReward::_ZFP_ZFAdForReward_stop(
@@ -272,7 +272,7 @@ void ZFAdForReward::_ZFP_ZFAdForReward_stop(
     if(d->started) {
         d->stop();
         this->observerNotify(zfself::E_AdOnStop(), zfobj<v_ZFResultType>(resultType), zfobj<v_zfstring>(errorHint));
-        zfobjRelease(this);
+        zfobjRelease(this); // retain by start
     }
 }
 

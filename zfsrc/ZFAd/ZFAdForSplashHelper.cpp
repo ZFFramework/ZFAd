@@ -29,11 +29,9 @@ public:
     zfuint loadingViewManualShowFlag;
     zfautoT<ZFUIWindow> loadingViewWindow;
     zfautoT<ZFTimer> loadingViewWindowHideDelay;
-    zfauto holder; // retained during running
 
     zftimet silentDurationBegin; // last time has showed ad
     zfauto attachObserverOwner; // not null if attached
-    zfauto attachHolder; // retained during attached
 
 public:
     _ZFP_ZFAdForSplashHelperPrivate(void)
@@ -50,10 +48,8 @@ public:
     , loadingViewManualShowFlag(0)
     , loadingViewWindow()
     , loadingViewWindowHideDelay()
-    , holder()
     , silentDurationBegin(zftimetInvalid())
     , attachObserverOwner()
-    , attachHolder()
     {
     }
 public:
@@ -189,7 +185,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
         return taskId;
     }
     d->loadStartTime = ZFTime::currentTime();
-    zfobjRetain(this);
+    zfobjRetain(this); // retain by load
     d->index = 0;
 
     zfclassNotPOD _Impl {
@@ -279,7 +275,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
             for(zfindex i = 0; i < onLoadStopList.count(); ++i) {
                 onLoadStopList[i].execute(zfargs);
             }
-            zfobjRelease(owner);
+            zfobjRelease(owner); // retain by load
         }
     };
     _Impl::tryNext(this);
@@ -297,6 +293,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         return;
     }
     d->started = zftrue;
+    zfobjRetain(this); // retain by start
     d->loadingViewShowFlag = zftrue;
     d->loadingViewUpdate(this);
     this->observerNotify(ZFAdForSplash::E_AdOnStart(), this->window());
@@ -317,6 +314,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             onStop.execute(zfargs);
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
+            zfobjRelease(owner); // retain by start
             return;
         }
 
@@ -347,6 +345,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->loadingViewUpdate(owner);
             ZFObserverGroupRemove(owner->d->observerOwner);
             owner->observerNotify(ZFAdForSplash::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+            zfobjRelease(owner); // retain by start
         } ZFLISTENER_END()
 
         ZFObserverGroup(owner->d->observerOwner, owner->d->impl)
@@ -383,11 +382,11 @@ void ZFAdForSplashHelper::objectOnDealloc(void) {
 
 // ============================================================
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
-    zfobjReleaseInScope(zfobjRetain(this));
+    zfauto holder = this;
     this->detach();
 
     d->attachObserverOwner = zfobj<ZFObject>();
-    d->attachHolder = this;
+    zfobjRetain(this); // retain by attach
     zfself *owner = this;
     ZFLISTENER_1(checkStart
             , zfweakT<zfself>, owner
@@ -434,7 +433,7 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, detach) {
     if(d->attachObserverOwner) {
         ZFObserverGroupRemove(d->attachObserverOwner);
         d->attachObserverOwner = zfnull;
-        d->attachHolder = zfnull;
+        zfobjRelease(this); // retain by attach
     }
 }
 ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, zfbool, attached) {

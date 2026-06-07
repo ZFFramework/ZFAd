@@ -55,9 +55,9 @@ public:
      * param1 is a #v_zfstring optionally holds the error hint
      * \n
      * for the result type:
-     * -  success : ad has displayed
+     * -  success : ad has displayed and got reward
      * -  fail : error occurred
-     * -  cancel : user has clicked skip button (may not work for some impl), or timeout
+     * -  cancel : user has clicked skip button (may not work for some impl), before fully displayed
      */
     ZFEVENT(AdOnStop)
 
