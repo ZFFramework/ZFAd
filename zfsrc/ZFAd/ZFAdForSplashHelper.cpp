@@ -315,6 +315,8 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
                 zfargs.param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail));
             }
             onStop.execute(zfargs);
+            owner->d->loadingViewShowFlag = zffalse;
+            owner->d->loadingViewUpdate(owner);
             return;
         }
 
