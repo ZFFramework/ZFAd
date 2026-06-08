@@ -51,9 +51,9 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFAdForRewardHelper>, instance
     if(window == zfnull) {
         window = ZFUIRootWindow::mainWindow();
     }
-    zfautoT<ZFAdForRewardHelper> ret = window->objectTag("_ZFP_ZFAdForRewardHelper_instance");
+    zfautoT<zfself> ret = window->objectTag("_ZFP_ZFAdForRewardHelper_instance");
     if(!ret) {
-        ret = zfobj<ZFAdForRewardHelper>();
+        ret = zfobj<zfself>();
         ret->d->window = window;
         window->objectTag("_ZFP_ZFAdForRewardHelper_instance", ret);
     }
@@ -126,7 +126,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
 
     zfclassNotPOD _Impl {
     public:
-        static void tryNext(ZF_IN ZFAdForRewardHelper *owner) {
+        static void tryNext(ZF_IN zfself *owner) {
             if(owner->d->index >= owner->d->cfgList.count()) {
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("no valid impl"));
                 return;
@@ -171,9 +171,9 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
 
             zfobj<ZFAdForReward> impl;
             owner->d->impl = impl;
-            zfweakT<ZFAdForRewardHelper> weakOwner = owner;
+            zfweakT<zfself> weakOwner = owner;
             ZFLISTENER_1(implOnLoadStop
-                    , zfweakT<ZFAdForRewardHelper>, weakOwner
+                    , zfweakT<zfself>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
                 v_ZFResultType *resultType = zfargs.param0();
@@ -192,7 +192,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
         }
     private:
         static void _stop(
-                ZF_IN ZFAdForRewardHelper *owner
+                ZF_IN zfself *owner
                 , ZF_IN v_ZFResultType *resultType
                 , ZF_IN v_zfstring *errorHint
                 ) {
@@ -245,13 +245,16 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
             if(resultType == zfnull) {
                 zfargs.param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail));
             }
+            if(zfargs.param1() == zfnull) {
+                zfargs.param1(zfobj<v_zfstring>("unknown error"));
+            }
             onStop.execute(zfargs);
             zfobjRelease(owner); // retain by start
             return;
         }
 
         ZFLISTENER_1(AdOnDisplay
-                , zfweakT<ZFAdForRewardHelper>, owner
+                , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
             owner->d->showing = zftrue;
@@ -259,14 +262,14 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClick
-                , zfweakT<ZFAdForRewardHelper>, owner
+                , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
             owner->observerNotify(ZFAdForReward::E_AdOnClick(), zfargs.param0(), zfargs.param1());
         } ZFLISTENER_END()
 
         ZFLISTENER_2(AdOnStop
-                , zfweakT<ZFAdForRewardHelper>, owner
+                , zfweakT<zfself>, owner
                 , ZFListener, onStop
                 ) {
             if(!owner) {return;}

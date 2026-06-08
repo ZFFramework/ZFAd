@@ -40,7 +40,7 @@ public:
 public:
     /** @brief util for impl to access impl from owner ad */
     static ZFAdForRewardImpl *implForAd(ZF_IN ZFAdForReward *ad) {
-        return (ZFAdForRewardImpl *)ad->_ZFP_ZFAdForReward_impl();
+        return (zfself *)ad->_ZFP_ZFAdForReward_impl();
     }
 
     // ============================================================

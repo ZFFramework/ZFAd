@@ -43,7 +43,7 @@ public:
                     , zfweakT<ZFAdForSplash>, ad
                     ) {
                 adWindow->show();
-                ZFAdForSplashImpl::implForAd(ad)->notifyAdOnDisplay(ad);
+                implForAd(ad)->notifyAdOnDisplay(ad);
                 ZFTask *task = zfargs.sender();
                 task->notifySuccess();
             } ZFLISTENER_END()
@@ -55,7 +55,7 @@ public:
                     , zfweakT<ZFAdForSplash>, ad
                     ) {
                 adWindow->hide();
-                ZFAdForSplashImpl::implForAd(ad)->notifyAdOnStop(ad, v_ZFResultType::e_Success, zfnull);
+                implForAd(ad)->notifyAdOnStop(ad, v_ZFResultType::e_Success, zfnull);
                 ZFTask *task = zfargs.sender();
                 task->notifySuccess();
             } ZFLISTENER_END()
@@ -93,7 +93,7 @@ public:
             Impl *impl = (Impl *)ad->nativeAd();
             impl->loadTaskId = zfnull;
             impl->loadedTime = ZFTime::currentTime();
-            ZFAdForSplashImpl::implForAd(ad)->notifyAdOnLoadStop(ad, v_ZFResultType::e_Success, zfnull);
+            implForAd(ad)->notifyAdOnLoadStop(ad, v_ZFResultType::e_Success, zfnull);
         } ZFLISTENER_END()
         impl->loadTaskId = ZFTimerOnce(1500, onLoad);
     }

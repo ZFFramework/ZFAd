@@ -40,7 +40,7 @@ public:
 public:
     /** @brief util for impl to access impl from owner ad */
     static ZFAdForSplashImpl *implForAd(ZF_IN ZFAdForSplash *ad) {
-        return (ZFAdForSplashImpl *)ad->_ZFP_ZFAdForSplash_impl();
+        return (zfself *)ad->_ZFP_ZFAdForSplash_impl();
     }
 
     // ============================================================

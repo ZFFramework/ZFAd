@@ -70,7 +70,7 @@ public:
                 return;
             }
         }
-        _ZFP_ZFAdForBannerHelperPrivate::Cfg const &cfg = this->cfgList[(this->nextIndex)++];
+        Cfg const &cfg = this->cfgList[(this->nextIndex)++];
         zfbool valid = zffalse;
         do {
             if(cfg.systemName) {

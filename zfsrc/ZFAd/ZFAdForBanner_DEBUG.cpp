@@ -14,10 +14,10 @@ private:
 public:
     zfoverride
     virtual void *nativeAdCreate(
-                ZF_IN ZFAdForBanner *ad
-                , ZF_IN const zfstring &appId
-                , ZF_IN const zfstring &adId
-                ) {
+            ZF_IN ZFAdForBanner *ad
+            , ZF_IN const zfstring &appId
+            , ZF_IN const zfstring &adId
+            ) {
         _view = zfobj<ZFUIView>();
         ZFLISTENER_1(viewOnEvent
                 , zfweakT<ZFAdForBanner>, ad
@@ -30,7 +30,7 @@ public:
                     ) {
                 return;
             }
-            ZFAdForBannerImpl::implForAd(ad)->notifyAdOnClose(ad);
+            implForAd(ad)->notifyAdOnClose(ad);
         } ZFLISTENER_END()
         _view->observerAdd(ZFUIView::E_ViewOnEvent(), viewOnEvent);
         ad->internalBgView(_view)->sizeFill();
@@ -60,7 +60,7 @@ public:
                 ) {
             owner->_displayDelay = zfnull;
             owner->_view->bgColor(ZFUIColorRandom(0.9f));
-            ZFAdForBannerImpl::implForAd(ad)->notifyAdOnDisplay(ad);
+            implForAd(ad)->notifyAdOnDisplay(ad);
         } ZFLISTENER_END()
         _displayDelay = ZFTimerOnce(1000, onDisplay);
     }
@@ -74,9 +74,9 @@ public:
 
     zfoverride
     virtual ZFUISize nativeAdMeasure(
-                ZF_IN ZFAdForBanner *ad
-                , ZF_IN const ZFUISize &sizeHint
-                ) {
+            ZF_IN ZFAdForBanner *ad
+            , ZF_IN const ZFUISize &sizeHint
+            ) {
         zffloat widthHint = sizeHint.width;
         if(widthHint <= 0) {
             ZFUIView *v = ZFUIRootWindow::mainWindow()->rootView();

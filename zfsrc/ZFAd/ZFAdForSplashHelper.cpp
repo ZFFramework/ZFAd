@@ -115,9 +115,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFAdForSplashHelper>, instance
     if(window == zfnull) {
         window = ZFUIRootWindow::mainWindow();
     }
-    zfautoT<ZFAdForSplashHelper> ret = window->objectTag("_ZFP_ZFAdForSplashHelper_instance");
+    zfautoT<zfself> ret = window->objectTag("_ZFP_ZFAdForSplashHelper_instance");
     if(!ret) {
-        ret = zfobj<ZFAdForSplashHelper>();
+        ret = zfobj<zfself>();
         ret->d->window = window;
         window->objectTag("_ZFP_ZFAdForSplashHelper_instance", ret);
     }
@@ -190,7 +190,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
 
     zfclassNotPOD _Impl {
     public:
-        static void tryNext(ZF_IN ZFAdForSplashHelper *owner) {
+        static void tryNext(ZF_IN zfself *owner) {
             if(owner->d->index >= owner->d->cfgList.count()) {
                 _stop(owner, zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), zfobj<v_zfstring>("no valid impl"));
                 return;
@@ -235,9 +235,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
 
             zfobj<ZFAdForSplash> impl;
             owner->d->impl = impl;
-            zfweakT<ZFAdForSplashHelper> weakOwner = owner;
+            zfweakT<zfself> weakOwner = owner;
             ZFLISTENER_1(implOnLoadStop
-                    , zfweakT<ZFAdForSplashHelper>, weakOwner
+                    , zfweakT<zfself>, weakOwner
                     ) {
                 if(!weakOwner) {return;}
                 v_ZFResultType *resultType = zfargs.param0();
@@ -256,7 +256,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
         }
     private:
         static void _stop(
-                ZF_IN ZFAdForSplashHelper *owner
+                ZF_IN zfself *owner
                 , ZF_IN v_ZFResultType *resultType
                 , ZF_IN v_zfstring *errorHint
                 ) {
@@ -311,6 +311,9 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             if(resultType == zfnull) {
                 zfargs.param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail));
             }
+            if(zfargs.param1() == zfnull) {
+                zfargs.param1(zfobj<v_zfstring>("unknown error"));
+            }
             onStop.execute(zfargs);
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
@@ -319,7 +322,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         }
 
         ZFLISTENER_1(AdOnDisplay
-                , zfweakT<ZFAdForSplashHelper>, owner
+                , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
             owner->d->showing = zftrue;
@@ -329,14 +332,15 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClick
-                , zfweakT<ZFAdForSplashHelper>, owner
+                , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
             owner->observerNotify(ZFAdForSplash::E_AdOnClick(), zfargs.param0(), zfargs.param1());
         } ZFLISTENER_END()
 
-        ZFLISTENER_1(AdOnStop
-                , zfweakT<ZFAdForSplashHelper>, owner
+        ZFLISTENER_2(AdOnStop
+                , zfweakT<zfself>, owner
+                , ZFListener, onStop
                 ) {
             if(!owner) {return;}
             owner->d->started = zffalse;
@@ -345,6 +349,11 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->loadingViewUpdate(owner);
             ZFObserverGroupRemove(owner->d->observerOwner);
             owner->observerNotify(ZFAdForSplash::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+            onStop.execute(ZFArgs()
+                    .sender(owner)
+                    .param0(zfargs.param0())
+                    .param1(zfargs.param1())
+                    );
             zfobjRelease(owner); // retain by start
         } ZFLISTENER_END()
 
@@ -403,7 +412,7 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
                     )) {
             {
                 zfobj<v_zfboolHolder> check(zftrue);
-                owner->observerNotify(ZFAdForSplashHelper::E_AdOnCheck(), check);
+                owner->observerNotify(zfself::E_AdOnCheck(), check);
                 if(!check->zfv) {
                     return;
                 }

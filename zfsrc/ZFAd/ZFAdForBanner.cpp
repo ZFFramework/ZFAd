@@ -26,18 +26,18 @@ ZFMETHOD_DEFINE_3(ZFAdForBanner, void, setup
 
     const ZFClass *cls = ZFClass::classForName(zfstr("ZFAdForBannerImpl_%s", implName));
     if(cls == zfnull) {
-        ZFLogTrim("[ZFAdForBanner] no impl: %s", implName);
+        ZFLogTrim("[%s] no impl: %s", zfself::ClassData()->className(), implName);
         return;
     }
     zfautoT<ZFAdForBannerImpl> impl = cls->newInstance();
     if(zfcast(ZFAdForBannerImpl *, impl) == zfnull) {
-        ZFLogTrim("[ZFAdForBanner] invalid impl: %s", cls);
+        ZFLogTrim("[%s] invalid impl: %s", zfself::ClassData()->className(), cls);
         return;
     }
 
     void *nativeAd = impl->nativeAdCreate(this, appId, adId);
     if(nativeAd == zfnull) {
-        ZFLogTrim("[ZFAdForBanner] unable to setup(%s, %s, %s)", implName, appId, adId);
+        ZFLogTrim("[%s] unable to setup(%s, %s, %s)", zfself::ClassData()->className(), implName, appId, adId);
         return;
     }
 
@@ -45,7 +45,7 @@ ZFMETHOD_DEFINE_3(ZFAdForBanner, void, setup
     zfclassNotPOD NativeImplViewDestroy {
     public:
         static void action(ZF_IN zfanyT<ZFUIView> const &view) {
-            ZFAdForBanner *owner = view;
+            zfself *owner = view;
             owner->d.to<ZFAdForBannerImpl *>()->nativeAdDestroy(owner);
             owner->d = zfnull;
         }

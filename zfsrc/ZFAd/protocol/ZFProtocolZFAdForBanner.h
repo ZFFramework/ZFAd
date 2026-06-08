@@ -43,7 +43,7 @@ public:
 public:
     /** @brief util for impl to access impl from owner ad */
     static ZFAdForBannerImpl *implForAd(ZF_IN ZFAdForBanner *ad) {
-        return (ZFAdForBannerImpl *)ad->_ZFP_ZFAdForBanner_impl();
+        return (zfself *)ad->_ZFP_ZFAdForBanner_impl();
     }
 
     // ============================================================
