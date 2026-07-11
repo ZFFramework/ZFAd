@@ -36,17 +36,6 @@ zfclass ZFLIB_ZFAd ZFAdForRewardHelper : zfextend ZFObject {
     ZFOBJECT_DECLARE(ZFAdForRewardHelper, ZFObject)
 
 public:
-    // ============================================================
-    // events
-    /**
-     * @brief see #ZFObject::observerNotify
-     *
-     * called to check whether ad should be started,
-     * param0 is a #v_zfboolHolder holding the result
-     */
-    ZFEVENT(AdOnCheck)
-
-public:
     /**
      * @brief access instance
      */

@@ -64,9 +64,11 @@ public:
             return;
         }
         {
-            zfobj<v_zfboolHolder> check(zftrue);
-            owner->observerNotify(ZFAdForBannerHelper::E_AdOnCheck(), check);
-            if(!check->zfv) {
+            ZFArgs zfargs;
+            zfargs.result(zfobj<v_zfbool>(zftrue));
+            owner->observerNotify(ZFAdForBannerHelper::E_AdOnCheck(), zfargs);
+            v_zfbool *shouldStart = zfargs.result();
+            if(!shouldStart || !shouldStart->zfv) {
                 return;
             }
         }
@@ -111,14 +113,14 @@ public:
                 , zfweakT<ZFAdForBannerHelper>, weakOwner
                 ) {
             if(!weakOwner) {return;}
-            weakOwner->observerNotify(ZFAdForBanner::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnDisplay(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClick
                 , zfweakT<ZFAdForBannerHelper>, weakOwner
                 ) {
             if(!weakOwner) {return;}
-            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClick(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnError
@@ -140,7 +142,7 @@ public:
             if(weakOwner->viewTreeInWindow()) {
                 weakOwner->d->implUpdate(weakOwner);
             }
-            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClose(), zfargs.param0(), zfargs.param1());
+            weakOwner->observerNotify(ZFAdForBanner::E_AdOnClose(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFObserverGroup(this->observerOwner, impl)

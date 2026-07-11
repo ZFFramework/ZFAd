@@ -99,7 +99,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplash, zfautoT<ZFTaskId>, load
         ) {
     if(d->nativeAd == zfnull) {
         zfobj<v_zfstring> errorHint("ad has not been setup");
-        this->observerNotify(zfself::E_AdOnLoadStop(), zfobj<v_ZFResultType>(v_ZFResultType::e_Fail), errorHint);
+        this->observerNotify(zfself::E_AdOnLoadStop(), ZFArgs().param0(zfobj<v_ZFResultType>(v_ZFResultType::e_Fail)).param1(errorHint));
         if(onLoadStop) {
             onLoadStop.execute(ZFArgs()
                     .sender(this)
@@ -173,7 +173,7 @@ ZFMETHOD_DEFINE_0(ZFAdForSplash, void, start) {
     this->observerNotify(zfself::E_AdOnStart());
     if(d->nativeAd == zfnull) {
         zfobj<v_zfstring> errorHint("ad has not been setup");
-        this->observerNotify(zfself::E_AdOnStop(), errorHint);
+        this->observerNotify(zfself::E_AdOnStop(), ZFArgs().param0(errorHint));
         return;
     }
 
@@ -261,7 +261,7 @@ void ZFAdForSplash::_ZFP_ZFAdForSplash_onLoadStop(
                 tmp[i].execute(zfargs);
             }
         }
-        this->observerNotify(zfself::E_AdOnLoadStop(), resultTypeTmp, errorHintTmp);
+        this->observerNotify(zfself::E_AdOnLoadStop(), ZFArgs().param0(resultTypeTmp).param1(errorHintTmp));
         zfobjRelease(this); // retain by load
     }
 }
@@ -271,7 +271,7 @@ void ZFAdForSplash::_ZFP_ZFAdForSplash_stop(
         ) {
     if(d->started) {
         d->stop();
-        this->observerNotify(zfself::E_AdOnStop(), zfobj<v_ZFResultType>(resultType), zfobj<v_zfstring>(errorHint));
+        this->observerNotify(zfself::E_AdOnStop(), ZFArgs().param0(zfobj<v_ZFResultType>(resultType)).param1(zfobj<v_zfstring>(errorHint)));
         zfobjRelease(this); // retain by start
     }
 }

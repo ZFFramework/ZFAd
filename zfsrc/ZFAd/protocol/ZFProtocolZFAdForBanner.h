@@ -63,7 +63,7 @@ public:
             ZF_IN ZFAdForBanner *ad
             , ZF_IN const zfstring &errorHint
             ) {
-        ad->observerNotify(ZFAdForBanner::E_AdOnError(), zfobj<v_zfstring>(errorHint));
+        ad->observerNotify(ZFAdForBanner::E_AdOnError(), ZFArgs().param0(zfobj<v_zfstring>(errorHint)));
     }
     /** @brief see #ZFAdForBanner::E_AdOnClose */
     zffinal void notifyAdOnClose(ZF_IN ZFAdForBanner *ad) {

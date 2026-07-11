@@ -46,7 +46,7 @@ public:
      * @brief see #ZFObject::observerNotify
      *
      * called to check whether ad should be started,
-     * param0 is a #v_zfboolHolder holding the result\n
+     * result is initialized as true and can be set to false to indicates ad should not be started\n
      * \n
      * before notifying the event, these rules already applied:
      * -  #skipped

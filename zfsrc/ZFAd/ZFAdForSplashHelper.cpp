@@ -262,7 +262,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, zfautoT<ZFTaskId>, load
                 ) {
             owner->d->index = 0;
             owner->d->loadStartTime = zftimetInvalid();
-            owner->observerNotify(ZFAdForSplash::E_AdOnLoadStop(), resultType, errorHint);
+            owner->observerNotify(ZFAdForSplash::E_AdOnLoadStop(), ZFArgs().param0(resultType).param1(errorHint));
 
             ZFCoreArray<ZFListener> onLoadStopList;
             onLoadStopList.swap(owner->d->onLoadStopList);
@@ -296,7 +296,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
     zfobjRetain(this); // retain by start
     d->loadingViewShowFlag = zftrue;
     d->loadingViewUpdate(this);
-    this->observerNotify(ZFAdForSplash::E_AdOnStart(), this->window());
+    this->observerNotify(ZFAdForSplash::E_AdOnStart(), ZFArgs().param0(this->window()));
 
     zfself *owner = this;
     ZFLISTENER_2(onLoadStop
@@ -328,14 +328,14 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->showing = zftrue;
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
-            owner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForSplash::E_AdOnDisplay(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClick
                 , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
-            owner->observerNotify(ZFAdForSplash::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForSplash::E_AdOnClick(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_2(AdOnStop
@@ -348,7 +348,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
             ZFObserverGroupRemove(owner->d->observerOwner);
-            owner->observerNotify(ZFAdForSplash::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForSplash::E_AdOnStop(), ZFArgs().paramInit(zfargs));
             onStop.execute(ZFArgs()
                     .sender(owner)
                     .param0(zfargs.param0())
@@ -411,9 +411,11 @@ ZFMETHOD_DEFINE_0(ZFAdForSplashHelper, void, attach) {
                     || curTime - owner->d->silentDurationBegin > owner->silentDuration()
                     )) {
             {
-                zfobj<v_zfboolHolder> check(zftrue);
-                owner->observerNotify(zfself::E_AdOnCheck(), check);
-                if(!check->zfv) {
+                ZFArgs zfargs;
+                zfargs.result(zfobj<v_zfbool>(zftrue));
+                owner->observerNotify(zfself::E_AdOnCheck(), zfargs);
+                v_zfbool *shouldStart = zfargs.result();
+                if(!shouldStart || !shouldStart->zfv) {
                     return;
                 }
             }

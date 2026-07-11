@@ -43,8 +43,6 @@ public:
 // ============================================================
 ZFOBJECT_REGISTER(ZFAdForRewardHelper)
 
-ZFEVENT_REGISTER(ZFAdForRewardHelper, AdOnCheck)
-
 ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFAdForRewardHelper>, instance
         , ZFMP_IN_OPT(ZFUIRootWindow *, window, zfnull)
         ) {
@@ -198,7 +196,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, zfautoT<ZFTaskId>, load
                 ) {
             owner->d->index = 0;
             owner->d->loadStartTime = zftimetInvalid();
-            owner->observerNotify(ZFAdForReward::E_AdOnLoadStop(), resultType, errorHint);
+            owner->observerNotify(ZFAdForReward::E_AdOnLoadStop(), ZFArgs().param0(resultType).param1(errorHint));
 
             ZFCoreArray<ZFListener> onLoadStopList;
             onLoadStopList.swap(owner->d->onLoadStopList);
@@ -230,7 +228,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
     }
     d->started = zftrue;
     zfobjRetain(this); // retain by start
-    this->observerNotify(ZFAdForReward::E_AdOnStart(), this->window());
+    this->observerNotify(ZFAdForReward::E_AdOnStart(), ZFArgs().param0(this->window()));
 
     zfself *owner = this;
     ZFLISTENER_2(onLoadStop
@@ -258,14 +256,14 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
                 ) {
             if(!owner) {return;}
             owner->d->showing = zftrue;
-            owner->observerNotify(ZFAdForReward::E_AdOnDisplay(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForReward::E_AdOnDisplay(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_1(AdOnClick
                 , zfweakT<zfself>, owner
                 ) {
             if(!owner) {return;}
-            owner->observerNotify(ZFAdForReward::E_AdOnClick(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForReward::E_AdOnClick(), ZFArgs().paramInit(zfargs));
         } ZFLISTENER_END()
 
         ZFLISTENER_2(AdOnStop
@@ -276,7 +274,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
             owner->d->started = zffalse;
             owner->d->showing = zffalse;
             ZFObserverGroupRemove(owner->d->observerOwner);
-            owner->observerNotify(ZFAdForReward::E_AdOnStop(), zfargs.param0(), zfargs.param1());
+            owner->observerNotify(ZFAdForReward::E_AdOnStop(), ZFArgs().paramInit(zfargs));
             onStop.execute(ZFArgs()
                     .sender(owner)
                     .param0(zfargs.param0())
