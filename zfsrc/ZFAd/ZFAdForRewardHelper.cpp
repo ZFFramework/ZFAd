@@ -246,6 +246,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
             if(zfargs.param1() == zfnull) {
                 zfargs.param1(zfobj<v_zfstring>("unknown error"));
             }
+            owner->d->started = zffalse;
             onStop.execute(zfargs);
             zfobjRelease(owner); // retain by start
             return;

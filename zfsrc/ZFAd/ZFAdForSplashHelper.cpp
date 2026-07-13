@@ -314,9 +314,10 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             if(zfargs.param1() == zfnull) {
                 zfargs.param1(zfobj<v_zfstring>("unknown error"));
             }
-            onStop.execute(zfargs);
+            owner->d->started = zffalse;
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
+            onStop.execute(zfargs);
             zfobjRelease(owner); // retain by start
             return;
         }
@@ -558,10 +559,6 @@ ZFMETHOD_FUNC_DEFINE_2(zfautoT<ZFTask>, ZFAdForSplashTask
             .observerAdd(ZFAdForSplash::E_AdOnDisplay(), finishWhenDisplay ? adOnStop : ZFCallback())
             .observerAdd(ZFAdForSplash::E_AdOnStop(), adOnStop)
             ;
-
-        if(finishWhenDisplay) {
-            ZFTimerOnce(3000, adOnStop);
-        }
     } ZFLISTENER_END()
 
     ZFLISTENER_1(onStop
