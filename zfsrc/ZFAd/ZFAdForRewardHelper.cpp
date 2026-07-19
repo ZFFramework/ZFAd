@@ -248,6 +248,7 @@ ZFMETHOD_DEFINE_1(ZFAdForRewardHelper, void, start
             }
             owner->d->started = zffalse;
             onStop.execute(zfargs);
+            owner->observerNotify(ZFAdForReward::E_AdOnStop(), ZFArgs().paramInit(zfargs));
             zfobjRelease(owner); // retain by start
             return;
         }

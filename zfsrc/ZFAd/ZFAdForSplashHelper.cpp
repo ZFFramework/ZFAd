@@ -318,6 +318,7 @@ ZFMETHOD_DEFINE_1(ZFAdForSplashHelper, void, start
             owner->d->loadingViewShowFlag = zffalse;
             owner->d->loadingViewUpdate(owner);
             onStop.execute(zfargs);
+            owner->observerNotify(ZFAdForSplash::E_AdOnStop(), ZFArgs().paramInit(zfargs));
             zfobjRelease(owner); // retain by start
             return;
         }

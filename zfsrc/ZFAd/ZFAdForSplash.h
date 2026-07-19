@@ -73,7 +73,7 @@ public:
     /**
      * @brief load timeout
      */
-    ZFPROPERTY_ASSIGN(zftimet, timeout, 5000)
+    ZFPROPERTY_ASSIGN(zftimet, timeout, 3000)
 
 public:
     /** @brief access the native ad */
